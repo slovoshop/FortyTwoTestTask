@@ -42,7 +42,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'south',
     'apps.hello',
 )
 
@@ -129,3 +129,7 @@ TEMPLATE_DIRS = (
 
 # Turn off south during test
 SOUTH_TESTS_MIGRATE = False
+
+FIXTURE_DIRS = (
+    os.path.join(BASE_DIR, 'apps', 'hello', 'fixtures'),
+)
