@@ -12,6 +12,7 @@ for(var num = 1; num <= 10; num++) {
              '<td>November 07, 2016, 14:05 a.m.</td></tr>';
 }
 
+
 function FakeRequests() {
 	$.ajax({
 	url: $(this).attr("href"),
@@ -19,18 +20,50 @@ function FakeRequests() {
 	success: function(data){
            $('#requests-content').html(content);
            unread++;
-           $(document).attr("title", "(" + unread + ") unread");
+           if (localStorage.synchronizePages == 'false') {
+             $(document).attr("title", "(" + unread + ") unread");
+           }
 					 }
 	});
 }
 
+
 window.onfocus = function() {
+  localStorage.setItem('synchronizePages', true);
   clearTimeout(checkReqTmr);
   $('title').text($initTitle);
-  unread = 0;
+  console.log("SP = true");
 };
 
+
 window.onblur = function() {
-	checkReqTmr = setInterval(FakeRequests, 1500);
+  localStorage.setItem('synchronizePages', false);
+  unread = 0;
+  checkReqTmr = setInterval(FakeRequests, 1500);
+  console.log("SP = true");
 }
 
+
+window.addEventListener(
+   "storage", 
+
+   function() {
+     if (localStorage.synchronizePages == 'true') {
+         clearTimeout(checkReqTmr);
+         $('title').text($initTitle);
+         console.log("SP = true");
+       } else {
+         unread = 0;
+         checkReqTmr = setInterval(FakeRequests, 1500);
+         console.log("SP = true");
+     }
+   }, 
+
+   false
+);
+
+
+$(document).ready(function(){
+  localStorage.setItem('synchronizePages', true);
+  console.log("doc ready");
+});
