@@ -7,6 +7,8 @@
 
 {% block content %}
 
+{% if bio %}
+
 <br><br>
 
 <div class="row bio">
@@ -39,17 +41,24 @@
 <div class="row text">
  <div class="col-md-4">
     <br><b>Bio:</b><br>
-    <p id="bio_text">{{bio.bio}}</p>
+    <p>{{ bio.bio|linebreaks }}</p>
  </div>
 
  <div class="col-md-8">
     <br><b>Other contacts:</b><br>
-    <p id="contacts_text">{{ bio.contacts }}</p>
+    <p>{{ bio.contacts|linebreaks }}</p>
  </div>
 </div>
 
+{% else %}
 
+<div class="row">
+   <div class="col-md-8 alert alert-warning">
+	 There is no profile in the db<br></div>
+   <div class="col-md-4"></div>
+</div>
 
+{% endif %}
 
 {% endblock content %}
 
