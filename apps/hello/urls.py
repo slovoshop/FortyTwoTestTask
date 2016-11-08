@@ -7,5 +7,5 @@ urlpatterns = patterns(
     'apps.hello.views',
     url(r'^$', 'home', name='home'),
     url(r'^request/$', RequestsView.as_view(), name='request'),
-    url(r'^south/$', 'south', name='south'),
+    url(r'^south/$', 'fix_migrations_on_barista', name='south'),
 )

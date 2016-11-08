@@ -12,52 +12,24 @@
 <body>
 
 <div class="container">
-   <div class="row" style="margin-top: 2em;">
-
-		 <div class="col-md-2"><a class="btn btn-primary btn-xs" 
-		       href="{% url "hello:south" %}?act=list">South list</a>
-		 </div>
-
-		 <div class="col-md-10">
-		 <p>Result: <br>{{ result1 }}</p>
-		 </div>
-
-  </div>
 
    <div class="row" style="margin-top: 2em;">
 
-		 <div class="col-md-2">
-       <a id="commandBtn" class="btn btn-primary btn-xs" onclick="runCommand();"
-		       href="{% url "hello:south" %}?act=run&command=">Run</a>
+		 <div class="col-md-6">
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=run">
+            python manage.py migrate apps.hello --delete-ghost-migrations</a>
 		 </div>
 
-		 <div class="col-md-10">
-     <input id="commandInput" type="text" value="Enter a command" maxlength="175">
-		 <br><br><p>Result: <br>{{ result2|linebreaks }}</p>
+		 <div class="col-md-6">
+       <p>Result: this command deletes migrations from the south_db on barista. <br>
+          If you'll get None after clicking that is OK!!!<br>
+       {{ result }}</p>
 		 </div>
 
   </div>
-
 
 </div>
-
-<script src="{% static "js/jquery.min.js" %}"></script>
-
-<script>
-
-function runCommand() {
-  commandInput = "/south/?act=run&command=" + $('#commandInput').val();
-  $('#commandBtn').attr('href', commandInput)
-  console.log('#commandBtn href: ' + commandInput);
-}
-
-$('#commandInput').keypress(function(e){
-   if(e.which == 13){//Enter key pressed
-     $('#commandBtn').click();
-   }
-});
-
-</script>
 
 </body>
 

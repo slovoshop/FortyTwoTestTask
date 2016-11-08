@@ -11,35 +11,32 @@ def home(request):
     return render(request, 'home.html', {'bio': bio})
 
 
-def south(request):
-    result1 = ''
-    result2 = ''
+def fix_migrations_on_barista(request):
+    ''' Solve problem with migrations on barista '''
+
+    from django.core.management import call_command
+    from optparse import make_option
+
+    result = ''
 
     if request.GET.get('act', '') == 'run':
-        from django.core.management import call_command
-        from optparse import make_option      
-
-        command = request.GET.get('command', '')
-
         try:
-            make_option('--delete-ghost-migrations', 
-                        action='store_true', 
-                        dest='delete_ghosts', 
+            make_option('--delete-ghost-migrations',
+                        action='store_true',
+                        dest='delete_ghosts',
                         help="Tells South to delete any 'ghost' \
                               migrations (ones in the database \
                               but not on disk).")
-            result2 = call_command(
-            "migrate",
-            "apps.hello",
-            delete_ghosts=True,
-            )
+            result = call_command("migrate",
+                                  "apps.hello",
+                                  delete_ghosts=True,)
 
         except Exception as e:
-            result2 = e
+            result = e
 
     return render(request,
                   'south.html',
-                  {'result1': result1, 'result2': result2})
+                  {'result': result})
 
 
 class RequestsView(ListView):
