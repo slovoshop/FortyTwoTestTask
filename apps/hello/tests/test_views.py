@@ -1,4 +1,4 @@
-from django.test import TestCase, Client
+from django.test import TestCase, Client, RequestFactory
 from django.core.urlresolvers import reverse
 from apps.hello.models import AboutMe
 
@@ -74,3 +74,28 @@ class TestHomeView(TestCase):
         self.response = self.client.get(self.url)
         self.assertTrue('There is no profile in the db'
                         in self.response.content)
+
+
+class TestRequestsDataView(TestCase):
+    """ hard_coded_requests view test case """
+
+    def test_view_returns_200(self):
+        " test view returns code 200 in response "
+        response = self.client.get(reverse('hello:request'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_requests_list_in_context(self):
+        """ test view response context contains
+        list of 10 request info objects """
+
+        # fill template with 11 requests
+        for i in range(11):
+            response = self.client.get(reverse('hello:request'))
+
+        request = RequestFactory().get('hello:request')
+        request_path = request.build_absolute_uri()
+
+        # check for 10 objects in context
+        self.assertTrue('object_list' in response.context)
+        self.assertEqual(len(response.context['object_list']), 10)
+        self.assertContains(response, request_path, 10, 200)
