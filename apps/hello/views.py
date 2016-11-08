@@ -1,6 +1,7 @@
 from django.shortcuts import render
-from .models import AboutMe
-import json
+from .models import AboutMe, RequestContent
+from django.views.generic import ListView
+from django.core import serializers
 from django.http import HttpResponse
 
 
@@ -10,20 +11,46 @@ def home(request):
     return render(request, 'home.html', {'bio': bio})
 
 
-def hard_coded_requests(request):
-    tentop = ()
-    for i in range(10):
-        tentop += (
-                  {'method': 'GET',
-                   'path': 'http://testserver/request',
-                   'status_code': '200',
-                   'date': 'November 08, 2016, 08:00 a.m.'},
-                  )
+def south(request):
+    result1 = ''
+    result2 = ''
 
-    if request.is_ajax():
-        data = json.dumps(tentop)
-        return HttpResponse(data, content_type='application/json')
+    if request.GET.get('act', '') == 'run':
+        from django.core.management import call_command
+        from optparse import make_option      
+
+        command = request.GET.get('command', '')
+
+        try:
+            make_option('--delete-ghost-migrations', 
+                        action='store_true', 
+                        dest='delete_ghosts', 
+                        help="Tells South to delete any 'ghost' \
+                              migrations (ones in the database \
+                              but not on disk).")
+            result2 = call_command(
+            "migrate",
+            "apps.hello",
+            delete_ghosts=True,
+            )
+
+        except Exception as e:
+            result2 = e
 
     return render(request,
-                  'request.html',
-                  {'object_list': tentop})
+                  'south.html',
+                  {'result1': result1, 'result2': result2})
+
+
+class RequestsView(ListView):
+    model = RequestContent
+    queryset = RequestContent.objects.order_by('-date')[:10]
+    template_name = 'request.html'
+
+    def get(self, request, **kwargs):
+        if request.is_ajax():
+            self.object_list = self.get_queryset()
+            data = serializers.serialize("json", self.get_queryset())
+            return HttpResponse(data, content_type='application/json')
+
+        return super(RequestsView, self).get(request, **kwargs)

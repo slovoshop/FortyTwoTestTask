@@ -1,6 +1,6 @@
 from django.test import TestCase, Client, RequestFactory
 from django.core.urlresolvers import reverse
-from apps.hello.models import AboutMe
+from apps.hello.models import AboutMe, RequestContent
 
 NORMAL = {
     'first_name': 'Alex',
@@ -99,3 +99,15 @@ class TestRequestsDataView(TestCase):
         self.assertTrue('object_list' in response.context)
         self.assertEqual(len(response.context['object_list']), 10)
         self.assertContains(response, request_path, 10, 200)
+
+    def test_no_entries_requestcontent_in_db(self):
+        """ check correct reaction if there are
+        no requestcontent entries in the db"""
+
+        RequestContent.objects.all().delete()
+        db = RequestContent.objects.all()
+        self.assertEqual(len(db), 0)
+
+        response = self.client.get(reverse('hello:request'))
+        self.assertTrue('There is no entries in the db yet'
+                        in response.content)
