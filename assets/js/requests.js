@@ -3,28 +3,35 @@ var $initTitle = $('title').text();
 var checkReqTmr; // timer for checking request's logs
 var unread = 0;
 
-var content = '';
-for(var num = 1; num <= 10; num++) {
-  content += '<tr><td>' + num + '</td>' + 
-             '<td>GET</td>' +
-             '<td>/request/</td>' + 
-             '<td>200</td>' +
-             '<td>November 07, 2016, 14:05 a.m.</td></tr>';
-}
 
+function JsonRequests() {
+  var currentUrl = location.href;
 
-function FakeRequests() {
 	$.ajax({
-	url: $(this).attr("href"),
-	cache: false,
-	success: function(data){
-           $('#requests-content').html(content);
-           unread++;
-           if (localStorage.synchronizePages == 'false') {
-             $(document).attr("title", "(" + unread + ") unread");
-           }
-					 }
-	});
+    type: 'GET',
+    url: currentUrl,
+	  cache: false,
+	  success: function(data){
+               var newContent;
+            
+               for (var i = 1; i <= data.length; i++) 
+                 newContent += '<tr><td>' + i + '</td>' +
+                               '<td>' + data[i-1].method + '</td>' +
+                               '<td>' + data[i-1].path + '</td>' +
+                               '<td>' + data[i-1].status_code + '</td>' +
+                               '<td>' + data[i-1].date + '</td></tr>';
+               
+               $('#requests-content').html(newContent);
+               unread++;
+               if (localStorage.synchronizePages == 'false') {
+                 $(document).attr("title", "(" + unread + ") unread");
+               }
+    },
+
+    error: function(xhr, status, error){
+		    console.log(error);
+    }
+  });
 }
 
 
@@ -39,7 +46,7 @@ window.onfocus = function() {
 window.onblur = function() {
   localStorage.setItem('synchronizePages', false);
   unread = 0;
-  checkReqTmr = setInterval(FakeRequests, 1500);
+  checkReqTmr = setInterval(JsonRequests, 1500);
   console.log("SP = true");
 }
 
