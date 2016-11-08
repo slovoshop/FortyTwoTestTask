@@ -22,7 +22,6 @@ class AboutMeModelTest(TestCase):
         self.assertEqual(smart_unicode(bio), u'Розробник Джанго')
 
 
-
 class RequestContentModelTest(TestCase):
     """Test RequestContent model"""
 
