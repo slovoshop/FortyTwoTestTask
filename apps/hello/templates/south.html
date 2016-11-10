@@ -11,23 +11,82 @@
 
 <body>
 
-<div class="container">
+<div class="container" style="height: 100%;">
 
    <div class="row" style="margin-top: 2em;">
-
 		 <div class="col-md-6">
        <a class="btn btn-primary btn-xs" 
-		      href="{% url "hello:south" %}?act=run">
+		      href="{% url "hello:south" %}">
+            south.html</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=delete_ghost_migrations">
             python manage.py migrate apps.hello --delete-ghost-migrations</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=0002_fake">
+            python manage.py migrate apps.hello 0002 --fake</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=app_db">
+            show settinngs.DATABASES</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=set_app_db">
+            set db name in settinngs</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=goto_0002">
+            python manage.py migrate apps.hello 0002</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=list">
+            python manage.py migrate --list</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=path_mig">
+            show apps/hello/migrations path</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=path_app">
+            show apps/hello path</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=path_prebase">
+            show ../BASE_DIR</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=path_base">
+            show BASE_DIR</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=sh">
+            run post_deploy.sh</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=history">
+            show MigrationHistory</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=rc_fields">
+            show RequestContent fields</a>
+
+     <br><br><br><br><br><br><br><br>
+     <br><br><br><br><br><br><br><br>
+     <br><br><br><br><br><br><br><br>
 		 </div>
 
-		 <div class="col-md-6">
-       <p>Result: this command deletes migrations from the south_db on barista. <br>
-          If you'll get None after clicking that is OK!!!<br>
-       {{ result }}</p>
-		 </div>
+   <div class="row" style="margin-top: 2em;">
+       RESULT: <br><br>
 
-  </div>
+       {% if linebreaks %} 
+          {% for item in result %}
+            {{ item }}<br>
+          {% endfor %}
+       {% else %} 
+          {{ result }}
+       {% endif %}           
+   </div>
 
 </div>
 
