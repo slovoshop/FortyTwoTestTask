@@ -38,7 +38,8 @@
 
 
     <!-- Start Content Columns -->      
-    <div class="col-md-12" id="content-column">      
+    <div class="{% block content_class %}col-md-12{% endblock %}" 
+         id="{% block content_id %}content-column{% endblock %}">      
 
       {% block content %}{% endblock content %}
 
@@ -62,8 +63,9 @@
   <!-- End Container -->
 
 
-
   <!-- Javascripts Inclusion -->
+
+<script src="{% static "js/jquery.min.js" %}"></script>
 
 {% block extra_js %}{% endblock extra_js %}
 
