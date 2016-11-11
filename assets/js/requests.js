@@ -1,7 +1,10 @@
 
+var onLoadRequestsDB = 0; // get requests count in DB after window.onload
+var ajaxRequestsDB = 0;   // get requests count in DB after current AJAX
+var firstAJAX = false;    // init first ajax after loading request.html
+var checkReqTmr;          // timer for checking request's logs
+
 var $initTitle = $('title').text();
-var checkReqTmr; // timer for checking request's logs
-var unread = 0;
 
 
 function toDate(dateStr) {  
@@ -38,14 +41,28 @@ function toDate(dateStr) {
 
 
 function JsonRequests() {
-  var currentUrl = location.href;
-
 	$.ajax({
     type: 'GET',
-    url: currentUrl,
+    url: location.href,
     cache: false,
     dataType: 'json',
-	  success: function(data){
+
+	  success: function(data, status, xhr){
+		    var newContent;
+		    ajaxRequestsDB = data.dbcount;
+		   
+		    if (firstAJAX) {
+		       onLoadRequestsDB = ajaxRequestsDB;
+		       firstAJAX = false;
+		    }
+
+		    var unreadRequests = ajaxRequestsDB - onLoadRequestsDB;
+
+		    if (!unreadRequests || (localStorage.synchronizePages == 'true')) {
+		      $('title').text($initTitle);
+		    } else {
+		      $('title').text("(" + unreadRequests + ") unread");
+		    }
 
         /* AJAX get data in JSON like that:
         {"dbcount": 701, 
@@ -64,19 +81,14 @@ function JsonRequests() {
                     ]
         }*/
 
-               var newContent;
-               for (var i = 1; i <= data.reqlogs.length; i++) 
-                 newContent += '<tr><td>' + i + '</td>' +
-                               '<td>' + data.reqlogs[i-1].method + '</td>' +
-                               '<td>' + data.reqlogs[i-1].path + '</td>' +
-                               '<td>' + data.reqlogs[i-1].status_code + '</td>' +
-                               '<td>' + toDate(data.reqlogs[i-1].date) + '</td></tr>';
-               
-               $('#requests-content').html(newContent);
-               if (localStorage.synchronizePages == 'false') {
-                 unread++;
-                 $(document).attr("title", "(" + unread + ") unread");
-               }
+		    for (var i = 1; i <= data.reqlogs.length; i++) 
+		      newContent += '<tr><td>' + i + '</td>' +
+		        '<td>' + data.reqlogs[i-1].method + '</td>' +
+		        '<td>' + data.reqlogs[i-1].path + '</td>' +
+		        '<td>' + data.reqlogs[i-1].status_code + '</td>' +
+		        '<td>' + toDate(data.reqlogs[i-1].date) + '</td></tr>';
+
+		    $('#requests-content').html(newContent);
     },
 
     error: function(xhr, status, error){
@@ -88,6 +100,8 @@ function JsonRequests() {
 
 window.onfocus = function() {
   localStorage.setItem('synchronizePages', true);
+  firstAJAX = true;
+  JsonRequests();
   clearTimeout(checkReqTmr);
   $('title').text($initTitle);
 };
@@ -95,7 +109,6 @@ window.onfocus = function() {
 
 window.onblur = function() {
   localStorage.setItem('synchronizePages', false);
-  unread = 0;
   checkReqTmr = setInterval(JsonRequests, 1500);
 }
 
@@ -103,12 +116,13 @@ window.onblur = function() {
 window.addEventListener(
    "storage", 
 
-   function() {
+   function() { 
      if (localStorage.synchronizePages == 'true') {
-         clearTimeout(checkReqTmr);
-         $('title').text($initTitle);
-       } else {
-         unread = 0;
+        firstAJAX = true;
+        JsonRequests();
+        clearTimeout(checkReqTmr);
+        $('title').text($initTitle);
+     } else if (localStorage.synchronizePages == 'false') {
          checkReqTmr = setInterval(JsonRequests, 1500);
      }
    }, 
@@ -118,5 +132,14 @@ window.addEventListener(
 
 
 $(document).ready(function(){
+  /* when events 'onfocus' and 'ready' follow each other 
+     than we set synchronizePages=true two times.
+     And EventListener("storage") is not activated for the second time,
+     because of 'true, true' sequence. So we must reset synchronizePages
+     by setting 'true, other value, true' sequence*/
+
+  localStorage.setItem('synchronizePages', '');
   localStorage.setItem('synchronizePages', true);
+  firstAJAX = true;
+  JsonRequests();
 });

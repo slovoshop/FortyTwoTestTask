@@ -1,6 +1,7 @@
 from django.test import TestCase, Client, RequestFactory
 from django.core.urlresolvers import reverse
 from apps.hello.models import AboutMe, RequestContent
+import json
 
 NORMAL = {
     'first_name': 'Alex',
@@ -111,3 +112,33 @@ class TestRequestsDataView(TestCase):
         response = self.client.get(reverse('hello:request'))
         self.assertTrue('There is no entries in the db yet'
                         in response.content)
+
+    def test_ajax(self):
+        """Requests page updates asynchronously
+            as new requests come in
+        """
+        RequestContent.objects.all().delete()
+
+        """ Check if there are empty ajax-data in the request.html """
+
+        response = self.client.get(reverse('hello:request'),
+                                   HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        data = json.loads(response.content.decode())
+
+        self.assertEqual(data['dbcount'], 0)
+        self.assertEqual(data['reqlogs'], [])
+
+        """ Make one request and check ajax-data in the request.html """
+
+        request_path = RequestFactory().get('hello:home').build_absolute_uri()
+
+        self.client.get(reverse('hello:home'))
+        response = self.client.get(reverse('hello:request'),
+                                   HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        data = json.loads(response.content.decode())
+
+        self.assertEqual(data['dbcount'], 1)
+        self.assertTrue(data['reqlogs'][0]['path'] in request_path)
+        self.assertContains(response, '"method": "GET"', 1, 200)
