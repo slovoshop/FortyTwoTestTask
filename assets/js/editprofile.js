@@ -27,6 +27,17 @@ function hardcodedUpdate() {
       $('#id_skype').val(profile.fields[0].skype);
       $('#id_contacts').val(profile.fields[0].contacts);
       $('#id_bio').val(profile.fields[0].bio);
+
+      $('.loader').css('display', 'none');
+      var message = "<div id='goodmessage' class='col-xs-12" +
+                    " bg-success prof_updated'>" +
+                    "Changes have been save!</div><br><br>";
+      $('.loader').before(message);
+      setTimeout(function() {
+        $('#goodmessage').remove();
+        $('#edit-content-column br').eq(0).remove();
+        $('#edit-content-column br').eq(0).remove();
+        }, 3000);
 		},
 
   error: function(error){
@@ -36,7 +47,13 @@ function hardcodedUpdate() {
 }
 
 
+function fakeLoader() {
+  $('.loader').css('display', 'block');
+  setTimeout(hardcodedUpdate, 2000);
+}
+
+
 $("#saveBtn").click(function(event) {
   event.preventDefault();
-  hardcodedUpdate();
+  fakeLoader();
 });
