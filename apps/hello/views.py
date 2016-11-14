@@ -2,7 +2,7 @@ from django.shortcuts import render
 from .models import AboutMe, RequestContent
 from django.views.generic import ListView, UpdateView
 from .forms import ProfileUpdateForm
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 import json
 import utils
 from django.core.urlresolvers import reverse
@@ -83,3 +83,32 @@ class ProfileUpdateView(UpdateView):
 
         context['photo_exists'] = photo_exists
         return context
+
+    def form_valid(self, form):
+        """
+        If the request is ajax, save the form and return a json response.
+        Otherwise return super as expected.
+        """
+
+        if self.request.is_ajax():
+            form.save()
+            profile_to_json = {'status': "success"}
+            return HttpResponse(json.dumps(profile_to_json),
+                                content_type="application/json")
+
+        return super(ProfileUpdateView, self).form_valid(form)
+
+    def form_invalid(self, form):
+        """
+        If the request is ajax, save the form and return a json response.
+        Otherwise return super as expected.
+        """
+
+        if self.request.is_ajax():
+            errors_dict = {}
+            if form.errors:
+                for error in form.errors:
+                    errors_dict[error] = form.errors[error]
+            return HttpResponseBadRequest(json.dumps(errors_dict))
+
+        return super(ProfileUpdateView, self).form_invalid(form)
