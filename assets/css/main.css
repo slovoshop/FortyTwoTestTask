@@ -37,6 +37,19 @@ body {
   margin-top: 2em;
 }
 
+#edit-content-column {
+  margin-top: 4em;
+}
+
+.main-area {
+  padding-left: 60px;
+  padding-right: 60px;
+}
+
+.form_widget {
+  background-color: #81DAF5;
+  color: green;
+}
 
 
 

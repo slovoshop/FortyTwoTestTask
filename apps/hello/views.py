@@ -4,6 +4,7 @@ from django.views.generic import ListView
 from django.http import HttpResponse
 import json
 from utils import FixBarista
+from django.views.decorators.csrf import csrf_exempt
 
 
 def home(request):
@@ -42,3 +43,8 @@ class RequestsView(ListView):
                                 content_type="application/json")
 
         return super(RequestsView, self).get(request, **kwargs)
+
+
+@csrf_exempt
+def edit(request):
+    return render(request, 'edit.html')
