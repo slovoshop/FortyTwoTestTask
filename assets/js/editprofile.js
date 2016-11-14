@@ -137,6 +137,41 @@ function showErrors() {
 }
 
 
+function customizePhotoDiv() {
+  $photoDiv = $('input[name="photo"]').parent('div');
+  $photoDiv.find('a').hide(); // hide imagelink
+
+  $photoDiv.contents().filter(function() {
+    return this.nodeType===3; // remove text from div
+  }).remove();
+}
+
+
+// Change image when user select another file
+
+$("#id_photo").change(function() {
+  var input = this;
+
+  if (input.files && input.files[0]) {
+    var reader = new FileReader();
+
+    reader.onload = function (e) {
+      $(".picture").attr('src', e.target.result);
+    }
+
+    reader.readAsDataURL(input.files[0]);
+  }
+});
+
+// Change image to default when user clear image in edit.html
+
+$('input[name="photo-clear"]').click(function() {
+  $('input[name="photo"]').parent('div').hide();
+  $('label[for="id_photo"]').after('<div><br><br></div>');
+  $(".picture").attr('src', '/static/img/user_default.png');
+}); 
+
+
 $(document).ready(function() {
 
   var config = {         /* http://www.formvalidator.net */
@@ -178,5 +213,7 @@ $(document).ready(function() {
     $( "#id_birthday" ).datepicker("option", "dateFormat", "yy-mm-dd");
     $("#id_birthday").datepicker("setDate" , "2016-01-01");
   });
+
+  customizePhotoDiv();
 
 });

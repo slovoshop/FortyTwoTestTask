@@ -1,12 +1,11 @@
 from django.shortcuts import render
 from .models import AboutMe, RequestContent
-from django.views.generic import ListView
+from django.views.generic import ListView, UpdateView
+from .forms import ProfileUpdateForm
 from django.http import HttpResponse
 import json
-from utils import FixBarista
-from django.views.decorators.csrf import csrf_exempt
-import os.path
-from urlparse import urlparse
+import utils
+from django.core.urlresolvers import reverse
 
 
 def home(request):
@@ -21,26 +20,11 @@ def home(request):
         pass
 
     if bio:
-        # check if user clear image in edit.html
-        try:
-            host = os.path.abspath(__file__)
+        host, name = utils.check_no_image_in_db(bio)
+        file_path = host + name
 
-            for i in range(4):
-                host = os.path.dirname(host)
-
-            name = urlparse(bio.photo.url).path
-
-        except ValueError:
-            return render(request,
-                          'home.html',
-                          {'bio': bio, 'photo_exists': photo_exists})
-
-        # check if user deletes image in file system
-        try:
-            if os.path.isfile(host + name):
-                photo_exists = True
-        except IOError:
-            pass
+        if file_path:
+            photo_exists = utils.check_no_image_in_filesystem(file_path)
 
     return render(request,
                   'home.html',
@@ -52,7 +36,7 @@ def fix_migrations_on_barista(request):
 
     command = request.GET.get('act', '')
 
-    result, linebreaks = FixBarista(command)
+    result, linebreaks = utils.FixBarista(command)
 
     return render(request,
                   'south.html',
@@ -79,6 +63,23 @@ class RequestsView(ListView):
         return super(RequestsView, self).get(request, **kwargs)
 
 
-@csrf_exempt
-def edit(request):
-    return render(request, 'edit.html')
+class ProfileUpdateView(UpdateView):
+    model = AboutMe
+    form_class = ProfileUpdateForm
+    template_name = 'edit.html'
+
+    def get_success_url(self):
+        return reverse('hello:edit', kwargs={'pk': self.object.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(ProfileUpdateView, self).get_context_data(**kwargs)
+        photo_exists = False
+
+        host, name = utils.check_no_image_in_db(self.object)
+        file_path = host + name
+
+        if file_path:
+            photo_exists = utils.check_no_image_in_filesystem(file_path)
+
+        context['photo_exists'] = photo_exists
+        return context

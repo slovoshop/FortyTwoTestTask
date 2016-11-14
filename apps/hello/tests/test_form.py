@@ -14,7 +14,7 @@ class ProfileUpdateFormTests(TestCase):
         Check that form saves correct data
         """
         instance = AboutMe.objects.first()
-        IMG_ROOT = os.path.join(settings.BASE_DIR, 'apps/hello/static/img/')
+        IMG_ROOT = os.path.join(settings.BASE_DIR, 'assets/img/')
         photo = open(IMG_ROOT + 'test.png', 'rb')
 
         form = ProfileUpdateForm({"id": 1,
