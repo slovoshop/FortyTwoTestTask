@@ -28,18 +28,8 @@
 				</thead>
 
 				<tbody id="requests-content">
+        </tbody>
 
-					{% for request in object_list %}
-					<tr>
-						<td>{{ forloop.counter }}</td>
-						<td>{{ request.method }}</td>
-						<td>{{ request.path }}</td>
-						<td>{{ request.status_code }}</td>
-						<td>{{ request.date }}</td>
-					</tr>
-					{% endfor %}
-
-				</tbody>
 			</table>
 
 {% else %}
