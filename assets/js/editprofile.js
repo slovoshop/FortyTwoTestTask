@@ -95,13 +95,6 @@ $(document).ready(function() {
      }
   }); 
 
-
-  $( function() {
-    $("#id_birthday").datepicker();
-    $( "#id_birthday" ).datepicker("option", "dateFormat", "yy-mm-dd");
-    $("#id_birthday").datepicker("setDate" , "2016-01-01");
-  });
-
   customizePhotoDiv();
 
 	// Set options for ajaxForm
