@@ -85,22 +85,6 @@ class TestRequestsDataView(TestCase):
         response = self.client.get(reverse('hello:request'))
         self.assertEqual(response.status_code, 200)
 
-    def test_requests_list_in_context(self):
-        """ test view response context contains
-        list of 10 request info objects """
-
-        # fill template with 11 requests
-        for i in range(11):
-            response = self.client.get(reverse('hello:request'))
-
-        request = RequestFactory().get('hello:request')
-        request_path = request.build_absolute_uri()
-
-        # check for 10 objects in context
-        self.assertTrue('object_list' in response.context)
-        self.assertEqual(len(response.context['object_list']), 10)
-        self.assertContains(response, request_path, 10, 200)
-
     def test_no_entries_requestcontent_in_db(self):
         """ check correct reaction if there are
         no requestcontent entries in the db"""
@@ -129,16 +113,18 @@ class TestRequestsDataView(TestCase):
         self.assertEqual(data['dbcount'], 0)
         self.assertEqual(data['reqlogs'], [])
 
-        """ Make one request and check ajax-data in the request.html """
+        """ Make 10 request and check ajax-data in the request.html """
+
+        for i in range(10):
+            self.client.get(reverse('hello:home'))
 
         request_path = RequestFactory().get('hello:home').build_absolute_uri()
 
-        self.client.get(reverse('hello:home'))
         response = self.client.get(reverse('hello:request'),
                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
         data = json.loads(response.content.decode())
 
-        self.assertEqual(data['dbcount'], 1)
+        self.assertEqual(data['dbcount'], 10)
         self.assertTrue(data['reqlogs'][0]['path'] in request_path)
-        self.assertContains(response, '"method": "GET"', 1, 200)
+        self.assertContains(response, '"method": "GET"', 10, 200)
