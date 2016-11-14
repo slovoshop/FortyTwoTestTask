@@ -77,10 +77,6 @@ body {
   color: green;
 }
 
-#errBtn {
-  display:none;
-}
-
 .spacing2em {
   margin-top: 2em; /* interval between the rows in edit.html */
 }

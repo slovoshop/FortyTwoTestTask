@@ -137,13 +137,11 @@ class ProfileEditViewTests(TestCase):
     def setUp(self):
         """ Set parametrs for ajax  """
 
-        self.url = reverse('hello:edit', kwargs={'pk': 1}) 
-        self.kwargs={'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
+        self.url = reverse('hello:edit', kwargs={'pk': 1})
+        self.kwargs = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 
-        self.fields_list = ('first_name', 'last_name', 'birthday',
-                       'email', 'jabber', 'skype')
-
-        self.profile = AboutMe.objects.first()
+        self.fields_list = ('first_name', 'last_name', 'email',
+                            'jabber', 'skype', 'birthday')
 
     def test_form_in_edit_page(self):
         """ Test html on the edit profile page """
@@ -155,14 +153,14 @@ class ProfileEditViewTests(TestCase):
         self.assertIn('form', response.context)
 
         form = response.context['form']
-        self.assertEqual(self.profile, form.instance)
+        profile = AboutMe.objects.first()
+        self.assertEqual(profile, form.instance)
 
     def test_image_field(self):
         """ Check that AboutMe instance have ImageField """
 
         photo = AboutMe._meta.get_field('photo')
         self.assertIsInstance(photo, ImageField)
-
 
     def test_ajax_invalid_post(self):
         """ Test for ajax post with errors """
@@ -173,17 +171,19 @@ class ProfileEditViewTests(TestCase):
         response = self.client.post(self.url, data, **self.kwargs)
 
         ERROR_MESSAGE = 'This field is required.'
-        self.assertContains(response, ERROR_MESSAGE, 5, 200)
+        self.assertContains(response, ERROR_MESSAGE, 6, 400)
+
+        profile = AboutMe.objects.first()
 
         for field in self.fields_list:
-            self.assertNotEqual(self.profile.serializable_value(field),
+            self.assertNotEqual(profile.serializable_value(field),
                                 data[field])
 
     def test_ajax_valid_post(self):
         """ Test for ajax valid post """
 
-        data_list = ('Max', 'Johnson', '2016-01-01',
-                     'max@gmail.com', 'max_jab', 'max_sk')
+        data_list = ('Max', 'Johnson', 'max@gmail.com',
+                     'max_jab', 'max_sk', '2016-01-01')
 
         data = dict(zip(self.fields_list, data_list))
 
@@ -192,6 +192,8 @@ class ProfileEditViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        for field in self.fields_list:
-            self.assertEqual(self.profile.serializable_value(field),
+        profile = AboutMe.objects.first()
+
+        for field in self.fields_list[:-1]:
+            self.assertEqual(profile.serializable_value(field),
                              data[field])
