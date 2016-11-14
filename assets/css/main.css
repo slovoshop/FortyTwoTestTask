@@ -51,6 +51,58 @@ body {
   color: green;
 }
 
+.loader {
+  display:none;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  margin-top: -20px;
+  opacity: 0.3;
+}
 
+.loader > img {
+  width: 50px;
+  height: 50px;
+  left: 50%;
+  position: absolute;
+  margin-left: -25px;
+  top: 30%;
+  margin-top: -25px;
+}
 
+#failmessage {
+  border: 1px solid red;
+  background-color: pink;
+  color: green;
+}
 
+.spacing2em {
+  margin-top: 2em; /* interval between the rows in edit.html */
+}
+
+.spacing6em {
+  margin-top: 6em; /* interval between the rows in edit.html */
+}
+
+.errorspacing {
+  padding-bottom: 2em; /* add interval when input has an error */
+}
+
+.user-auth {
+width: 100%;
+text-align: right;
+}
+
+.editlink {
+margin-bottom: 3em;
+text-align: right;
+}
+
+#homephoto {
+  width: 330px;
+}
+
+.picture {
+  margin-top: 1em;
+}

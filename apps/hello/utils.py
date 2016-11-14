@@ -4,6 +4,7 @@ from django.conf import settings
 import os
 from south.models import MigrationHistory
 from apps.hello.models import RequestContent
+from urlparse import urlparse
 
 
 def FixBarista(command):
@@ -114,3 +115,37 @@ def FixBarista(command):
         result = e
 
     return result, linebreaks
+
+
+def check_no_image_in_db(model_instance):
+    ''' check if user clear image in db '''
+
+    host = ''
+    name = ''
+
+    try:
+        host = os.path.abspath(__file__)
+
+        for i in range(4):
+            host = os.path.dirname(host)
+
+        name = urlparse(model_instance.photo.url).path
+
+    except ValueError:
+        pass
+
+    return host, name
+
+
+def check_no_image_in_filesystem(file_path):
+    ''' check if user deletes image in file system '''
+
+    photo_exists = False
+
+    try:
+        if os.path.isfile(file_path):
+            photo_exists = True
+    except IOError:
+        pass
+
+    return photo_exists
