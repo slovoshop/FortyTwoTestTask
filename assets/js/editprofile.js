@@ -1,20 +1,39 @@
 
-var profile = {
-    pk: 2, 
-    model: "hello.aboutme",
-    fields: [{
-        first_name: "Kim", 
-        last_name: "Shao",  
-        birthday: "1981-03-25", 
-        email: "kim@box.com",
-        jabber: "ks_jab", 
-        skype: "ks_skype", 
-        bio: "Senior Django developer", 
-        contacts: "facebook.com/kim"
-    }]
-};
+function blockPage() {
+		$('textarea').attr('disabled', 'disabled');
+		$('input').attr('disabled', 'disabled');
+		$('button').attr('disabled', 'disabled');
+		$('a').attr('disabled', 'disabled');
+		$('.loader').css('display', 'block');
+}
+
+
+function unblockPage() {
+		$('textarea').removeAttr('disabled');
+		$('input').removeAttr('disabled');
+		$('button').removeAttr('disabled');
+		$('a').removeAttr('disabled');
+		$('.loader').css('display', 'none');
+}
+
 
 function hardcodedUpdate() {
+
+  var profile = {
+      pk: 2, 
+      model: "hello.aboutme",
+      fields: [{
+          first_name: "Kim", 
+          last_name: "Shao",  
+          birthday: "1981-03-25", 
+          email: "kim@box.com",
+          jabber: "ks_jab", 
+          skype: "ks_skype", 
+          bio: "Senior Django developer", 
+          contacts: "facebook.com/kim"
+      }]
+  };
+
 	$.ajax({
 	url: $(this).attr("href"),
 	cache: false,
@@ -28,11 +47,12 @@ function hardcodedUpdate() {
       $('#id_contacts').val(profile.fields[0].contacts);
       $('#id_bio').val(profile.fields[0].bio);
 
-      $('.loader').css('display', 'none');
+      unblockPage();
       var message = "<div id='goodmessage' class='col-xs-12" +
                     " bg-success prof_updated'>" +
                     "Changes have been save!</div><br><br>";
       $('.loader').before(message);
+
       setTimeout(function() {
         $('#goodmessage').remove();
         $('#edit-content-column br').eq(0).remove();
@@ -41,14 +61,15 @@ function hardcodedUpdate() {
 		},
 
   error: function(error){
-		  console.log(error);
+      unblockPage();
+      console.log(error);
     }
 	});
 }
 
 
 function fakeLoader() {
-  $('.loader').css('display', 'block');
+  blockPage();
   setTimeout(hardcodedUpdate, 2000);
 }
 
