@@ -12,13 +12,13 @@
 
 {% block menu %}{% endblock %}
 
-{% block content_class %}col-md-8{% endblock %}
+{% block content_class %}col-md-12{% endblock %}
 
 {% block content_id %}edit-content-column{% endblock %}
 
 {% block content %}
 
-  <div class="loader"><img src="{% static 'img/loader.gif' %}"></div>
+  <div class="loader spacing4em"><img src="{% static 'img/loader.gif' %}"></div>
 
     <form method="POST" enctype="multipart/form-data" \
           action="/edit/"> 
@@ -29,7 +29,7 @@
 
     <div class="row-data">
 
-    <div class="col-md-6">
+    <div class="col-md-4">
       <div class="form-group">  
         <label class="control-label col-lg-4" for="id_first_name">First_name</label>
         <div class=" col-lg-8 ">
@@ -39,7 +39,7 @@
       </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-4">
       <div class="form-group">
         <label class="control-label col-lg-3 " for="id_email">Email</label>
         <div class=" col-lg-9 ">
@@ -52,9 +52,9 @@
     </div>
     <br><br>
 
-    <div class="row-data">
+    <div class="row-data spacing2em">
 
-    <div class="col-md-6">
+    <div class="col-md-4">
       <div class="form-group">
         <label class="control-label col-lg-4" for="id_last_name">Last_name</label>
         <div class=" col-lg-8 ">
@@ -64,7 +64,7 @@
       </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-4">
       <div class="form-group">
         <label class="control-label col-lg-3" for="id_jabber">Jabber</label>
         <div class=" col-lg-9 ">
@@ -77,9 +77,9 @@
     </div>
     <br><br>
 
-    <div class="row-data">
+    <div class="row-data spacing2em">
 
-    <div class="col-md-6">
+    <div class="col-md-4">
       <div class="form-group">  
         <label class="control-label col-lg-4" for="id_birthday">Birthday</label>
         <div class=" col-lg-8 ">
@@ -89,7 +89,7 @@
       </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-4">
       <div class="form-group">  
         <label class="control-label col-lg-3" for="id_skype">Skype</label>
         <div class=" col-lg-9 ">
@@ -102,9 +102,9 @@
     </div>
     <br><br>
 
-    <div class="row-data">
+    <div class="row-data spacing4em">
 
-    <div class="col-md-6">
+    <div class="col-md-4">
       <p>
       <div class="form-group">
         <label class="control-label col-lg-4" for="id_photo">Фото</label>
@@ -125,7 +125,7 @@
       <a class="btn btn-small btn-primary" href="/">Back</a>
       </div>
 
-    <div class="col-md-6">
+    <div class="col-md-4">
       <div class="form-group">
         <label class="control-label" for="id_contacts">Additional contacts</label>
         <div>
@@ -155,6 +155,7 @@
 {% block extra_js %}
   <script src="{% static "js/datewidget/jquery-1.11.3.js" %}"></script>
   <script src="{% static "js/datewidget/jquery-ui.min.js" %}"></script>
+  <script src="{% static "js/formvalidator/jquery.form-validator.min.js" %}"></script>
   <script src="{% static "js/editprofile.js" %}"></script>
 {% endblock extra_js %}
 

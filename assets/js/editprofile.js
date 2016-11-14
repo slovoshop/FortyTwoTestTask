@@ -137,8 +137,46 @@ function showErrors() {
 }
 
 
-$( function() {
-  $("#id_birthday").datepicker();
-  $( "#id_birthday" ).datepicker("option", "dateFormat", "yy-mm-dd");
-  $("#id_birthday").datepicker("setDate" , "2016-01-01");
+$(document).ready(function() {
+
+  var config = {         /* http://www.formvalidator.net */
+    form : 'form',
+    validate : {
+      '#id_first_name, #id_last_name' : {
+        validation : 'length',
+        length : 'min3'
+      },
+      '#id_email, #id_jabber' : {
+        validation : 'email'
+      },
+      '#id_birthday' : {
+        validation : 'birthdate',
+        'error-msg' : 'Date should be younger than today and not older than 120 years'
+      }
+    },
+    onElementValidate : function(valid, $el, $form, errorMess) {
+       $rowDiv = $el.parents().eq(3);
+       if(valid) {
+         $rowDiv.removeClass('errorspacing');
+       } else {
+         $rowDiv.addClass('errorspacing');
+       }
+    }
+  };
+
+
+  $.validate({
+     modules : 'jsconf, date',
+     onModulesLoaded : function() {
+       $.setupValidation(config);
+     }
+  }); 
+
+
+  $( function() {
+    $("#id_birthday").datepicker();
+    $( "#id_birthday" ).datepicker("option", "dateFormat", "yy-mm-dd");
+    $("#id_birthday").datepicker("setDate" , "2016-01-01");
+  });
+
 });
