@@ -9,7 +9,9 @@
 
 {% if bio %}
 
-<br><br>
+<div class="row editlink">
+   <a id="edit" href="{% url "hello:edit" %}"> Edit </a>
+</div>
 
 <div class="row bio">
  <div class="col-md-2 smallcol">First name:</div>

@@ -93,5 +93,13 @@ body {
   padding-bottom: 2em; /* add interval when input has an error */
 }
 
+.user-auth {
+width: 100%;
+text-align: right;
+}
 
+.editlink {
+margin-bottom: 3em;
+text-align: right;
+}
 
