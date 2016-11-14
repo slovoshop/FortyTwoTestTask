@@ -7,6 +7,8 @@ import json
 import utils
 from django.core.urlresolvers import reverse
 import logging
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
 
 
 logger = logging.getLogger(__name__)
@@ -53,6 +55,10 @@ class RequestsView(ListView):
     queryset = RequestContent.objects.order_by('-date')[:10]
     template_name = 'request.html'
 
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(RequestsView, self).dispatch(*args, **kwargs)
+
     def get(self, request, **kwargs):
         if request.is_ajax():
 
@@ -71,6 +77,10 @@ class ProfileUpdateView(UpdateView):
     model = AboutMe
     form_class = ProfileUpdateForm
     template_name = 'edit.html'
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(ProfileUpdateView, self).dispatch(*args, **kwargs)
 
     def get_success_url(self):
         return reverse('hello:edit', kwargs={'pk': self.object.id})
