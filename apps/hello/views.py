@@ -6,6 +6,10 @@ from django.http import HttpResponse, HttpResponseBadRequest
 import json
 import utils
 from django.core.urlresolvers import reverse
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def home(request):
@@ -81,6 +85,10 @@ class ProfileUpdateView(UpdateView):
         if file_path:
             photo_exists = utils.check_no_image_in_filesystem(file_path)
 
+        if not photo_exists:
+            message = "File doesn't exist:  " + self.object.photo.url
+            logger.exception(message)
+
         context['photo_exists'] = photo_exists
         return context
 
@@ -112,3 +120,17 @@ class ProfileUpdateView(UpdateView):
             return HttpResponseBadRequest(json.dumps(errors_dict))
 
         return super(ProfileUpdateView, self).form_invalid(form)
+
+    def post(self, request, *args, **kwargs):
+        if request.is_ajax():
+            try:
+                return super(ProfileUpdateView,
+                             self).post(request, *args, **kwargs)
+            except IOError:
+                message = "File doesn't exist:  " + self.object.photo.url
+                logger.exception(message)
+                return HttpResponseBadRequest(
+                          json.dumps({'Image': message}),
+                          content_type="application/json")
+
+        return super(ProfileUpdateView, self).post(request, *args, **kwargs)

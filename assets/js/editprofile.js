@@ -98,7 +98,7 @@ $(document).ready(function() {
   customizePhotoDiv();
 
 	// Set options for ajaxForm
-  var options = {
+  var options = { 
         beforeSubmit: function(){
           blockPage();
         },
@@ -110,6 +110,7 @@ $(document).ready(function() {
                         " bg-success prof_updated'>" +
                         "Changes have been save!</div><br><br>";
           $('.loader').before(message);
+
           setTimeout(function() {
             $('#goodmessage').remove();
             $('#edit-content-column br').eq(0).remove();
@@ -120,29 +121,28 @@ $(document).ready(function() {
         error: function(msg) {
 
           unblockPage();
-          var message = "<div id='failmessage' class='col-xs-12'>" +
-                        "<b>Check errors, please!</b></div>";
-          $('.loader').before(message);
-          $('#failmessage').after("<p id='after_fail_empty_string'>&nbsp</p>");
-
+          var message = '';
           var errors = JSON.parse(msg.responseText);
 
-          var fields = ['first_name', 'last_name',  'birthday',
-                        'email', 'jabber', 'skype'];
+          if (errors['Image']) {
+            console.log(errors['Image']);
+          } else {
+            message = "<div id='failmessage' class='col-xs-12'>" +
+                      "<b>Check errors, please!</b><br><br>";
 
-          var $idElement, $labelElement;
+            var fields = ['first_name', 'last_name',  'birthday',
+                          'email', 'jabber', 'skype'];
 
-          $.each(fields, function( index, field ) {
-            $idElement = $('#id_' + field);
-            $labelElement = $("label[for='"+$idElement.attr('id')+"']");
-            $idElement.parent('div').prepend('<span>&nbsp</span>');
+            $.each(fields, function( index, field ) {
+              if(errors[field]) {
+                message += field+ ': ' +errors[field]+ '<br>'
+              }
+            });
 
-            if(errors[field]) {
-              $idElement.parent('div').prepend('<span>'+errors[field]+'</span>');
-              $labelElement.prepend('<span>*</span>');
-              $labelElement.parent('div').addClass('has-error');
-            }
-          });
+            message += '</div>';
+            $('.loader').before(message);
+            $('#failmessage').after("<p id='after_fail_empty_string'>&nbsp</p>");
+          }
         }
   };
 
