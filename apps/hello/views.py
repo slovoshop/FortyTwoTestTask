@@ -95,7 +95,7 @@ class ProfileUpdateView(UpdateView):
         if file_path:
             photo_exists = utils.check_no_image_in_filesystem(file_path)
 
-        if not photo_exists:
+        if not photo_exists and self.object.photo:
             message = "File doesn't exist:  " + self.object.photo.url
             logger.exception(message)
 

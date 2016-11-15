@@ -56,10 +56,10 @@
  </div>
  <div class="col-md-8">
     <br><b>Other contacts:</b><br>
-    <p id="contacts_text">{{ bio.contacts }}</p>
+    <p id="contacts_text">{{ bio.contacts|linebreaks }}</p>
     <br>
     <br><b>Bio:</b><br>
-    <p id="bio_text">{{bio.bio}}</p>
+    <p id="bio_text">{{ bio.bio|linebreaks }}</p>
  </div>
 </div>
 
