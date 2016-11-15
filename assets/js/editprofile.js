@@ -45,11 +45,24 @@ $("#id_photo").change(function() {
 
     reader.onload = function (e) {
       $(".picture").attr('src', e.target.result);
+
+    // Resize image at the frontend before saving
+
+      $(".picture").each(function(){
+        var maxWidth = 200;
+        var ratio = 0;
+        var img = $(".picture");
+
+        ratio = img.height() / img.width();
+        img.attr('width', maxWidth);
+        img.attr('height', (maxWidth*ratio));   
+      }); 
     }
 
     reader.readAsDataURL(input.files[0]);
   }
-});
+}); 
+
 
 // Change image to default when user clear image in edit.html
 
