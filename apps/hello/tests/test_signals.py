@@ -10,6 +10,7 @@ class SignalsTest(TestCase):
     Check signal processor for save log
     about creation/updating/deletion models objects
     """
+
     fixtures = ['test_data.json']
 
     def test_creation_log(self):
@@ -30,7 +31,6 @@ class SignalsTest(TestCase):
         Check signal processor saves log
         about model object updating
         """
-
         ModelsChange.objects.all().delete()
         profile = AboutMe.objects.first()
         profile.first_name = 'Leo'
