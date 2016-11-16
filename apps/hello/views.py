@@ -9,6 +9,7 @@ from django.core.urlresolvers import reverse
 import logging
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+import os
 
 
 logger = logging.getLogger(__name__)
@@ -87,16 +88,13 @@ class ProfileUpdateView(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(ProfileUpdateView, self).get_context_data(**kwargs)
-        photo_exists = False
 
-        host, name = utils.check_no_image_in_db(self.object)
-        file_path = host + name
+        photo_exists = os.path.isfile(self.object.photo.path) \
+            if self.object.photo else False
 
-        if file_path:
-            photo_exists = utils.check_no_image_in_filesystem(file_path)
-
-        if not photo_exists and self.object.photo:
-            message = "File doesn't exist:  " + self.object.photo.url
+        if not photo_exists:
+            message = "File doesn't exist: {}".format(self.object.photo.url) \
+                if self.object.photo else "User has no photo"
             logger.exception(message)
 
         context['photo_exists'] = photo_exists
