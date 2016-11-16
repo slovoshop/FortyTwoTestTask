@@ -2,8 +2,8 @@ from django.test import TestCase, Client, RequestFactory
 from django.core.urlresolvers import reverse
 from apps.hello.models import AboutMe, RequestContent
 import json
-from django.db.models import ImageField
 from apps.hello.utils import GetTestImage, RemoveTestImages
+from apps.hello.forms import ProfileUpdateForm
 
 NORMAL = {
     'first_name': 'Alex',
@@ -160,11 +160,29 @@ class ProfileEditViewTests(TestCase):
         profile = AboutMe.objects.first()
         self.assertEqual(profile, form.instance)
 
-    def test_image_field(self):
-        """ Check that AboutMe instance have ImageField """
+    def test_image_resize(self):
+        """
+        Check that image is saved and resized to 200x200px
+        """
+        instance = AboutMe.objects.first()
+        image = GetTestImage('test.png', 'PIL')
 
-        image = AboutMe._meta.get_field('photo')
-        self.assertIsInstance(image, ImageField)
+        # check that image is bigger than 200x200px
+        self.assertGreater(image.height, 200)
+        self.assertGreater(image.width, 200)
+
+        form = ProfileUpdateForm(NORMAL,
+                                 {'photo': GetTestImage('test.png')},
+                                 instance=instance)
+
+        self.assertTrue(form.is_valid())
+        form.save()
+
+        # check that image is resized to 200x200px
+        profile = AboutMe.objects.first()
+        image_resized = GetTestImage(profile.photo, 'PIL')
+        self.assertLessEqual(image_resized.height, 200)
+        self.assertLessEqual(image_resized.width, 200)
 
     def test_ajax_invalid_post(self):
         """ Test for ajax post with errors """
