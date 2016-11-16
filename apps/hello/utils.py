@@ -1,3 +1,4 @@
+
 from django.core.management import call_command
 from optparse import make_option
 from django.conf import settings
@@ -5,6 +6,9 @@ import os
 from south.models import MigrationHistory
 from apps.hello.models import RequestContent
 from urlparse import urlparse
+from PIL import Image
+from django.core.files.uploadedfile import SimpleUploadedFile
+import glob
 
 
 def FixBarista(command):
@@ -149,3 +153,29 @@ def check_no_image_in_filesystem(file_path):
         pass
 
     return photo_exists
+
+
+def GetTestImage(imagefile, mode='simple'):
+    """ Prepear image file for tests """
+
+    IMG_ROOT = os.path.join(settings.BASE_DIR, 'assets/img/')
+
+    if (mode == 'simple'):
+        photo = open(IMG_ROOT + imagefile, 'rb')
+        return SimpleUploadedFile(photo.name, photo.read())
+
+    elif (mode == 'PIL'):
+        if isinstance(imagefile, basestring):
+            return Image.open(IMG_ROOT + imagefile)
+        else:
+            return Image.open(imagefile)
+
+
+def RemoveTestImages():
+    path = os.path.join(os.path.dirname(settings.BASE_DIR),
+                        'uploads', 'photo', '*.png')
+
+    for f in glob.glob(path):
+        filename = os.path.basename(f)
+        if filename.startswith("test"):
+            os.remove(f)
