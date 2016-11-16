@@ -48,7 +48,6 @@ $("#id_photo").change(function() {
 
     // Resize image at the frontend before saving
 
-      $(".picture").each(function(){
         var maxWidth = 200;
         var ratio = 0;
         var img = $(".picture");
@@ -56,7 +55,6 @@ $("#id_photo").change(function() {
         ratio = img.height() / img.width();
         img.attr('width', maxWidth);
         img.attr('height', (maxWidth*ratio));   
-      }); 
     }
 
     reader.readAsDataURL(input.files[0]);
