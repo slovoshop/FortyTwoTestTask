@@ -5,6 +5,7 @@ var firstAJAX = false;    // init first ajax after loading request.html
 var checkReqTmr;          // timer for checking request's logs
 
 var $initTitle = $('title').text();
+var $pSlider, $btnSetPriority, $btnBackPriority, $lastLink;
 
 
 function toDate(dateStr) {  
@@ -70,23 +71,31 @@ function JsonRequests() {
                     {"date": "2016-09-16 09:20:19.098777+00:00", 
                      "path": "http://localhost:8000/request/", 
                      "status_code": 200, 
+                     "priority": 2,
                      "id": 701, 
                      "method": "GET"}, 
                     .....
                     {"date": "2016-09-16 09:20:12.355412+00:00", 
                      "path": "http://localhost:8000/admin/", 
                      "status_code": 200, 
+                     "priority": 7,
                      "id": 700, 
                      "method": "GET"}
                     ]
         }*/
 
 		    for (var i = 1; i <= data.reqlogs.length; i++) 
-		      newContent += '<tr><td>' + i + '</td>' +
-		        '<td>' + data.reqlogs[i-1].method + '</td>' +
-		        '<td>' + data.reqlogs[i-1].path + '</td>' +
-		        '<td>' + data.reqlogs[i-1].status_code + '</td>' +
-		        '<td>' + toDate(data.reqlogs[i-1].date) + '</td></tr>';
+
+          newContent += '<tr><td>' + i + '</td>' +
+            '<td>' + data.reqlogs[i-1].method + '</td>' +
+            '<td>' + data.reqlogs[i-1].path + '</td>' +
+            '<td>' + data.reqlogs[i-1].status_code + '</td>' +
+            '<td>' + toDate(data.reqlogs[i-1].date) + '</td>' +
+            '<td style="text-align: center;">' +
+            '<a class="priority" href="" ' + 
+            'id="priority_' + data.reqlogs[i-1].id + 
+            '" data-request-id="' + data.reqlogs[i-1].id + '">' + 
+            data.reqlogs[i-1].priority + '</a></td></tr>';
 
 		    $('#requests-content').html(newContent);
     },
@@ -110,7 +119,26 @@ window.onfocus = function() {
 window.onblur = function() {
   localStorage.setItem('synchronizePages', false);
   checkReqTmr = setInterval(JsonRequests, 1500);
+  $('#pSlider, #btnSetPriority, #btnBackPriority').hide();
+  $('#content-column').prepend($pSlider, $btnSetPriority, $btnBackPriority);
+  $('#pColumn').removeClass('col-md-3');
 }
+
+
+$(document).on('click', 'a.priority', function() {
+  $(this).hide();
+  $('#pColumn').addClass('col-md-3');
+  $(this).after($btnBackPriority, $pSlider, $btnSetPriority);
+  $('#slider').slider().data('slider').setValue($(this).text());
+  $('#btnBackPriority, #pSlider, #btnSetPriority').show();
+
+  if (!$(this).is($lastLink)) {
+    $lastLink.show();
+  }
+
+  $lastLink = $(this);
+  return false;
+});
 
 
 window.addEventListener(
@@ -142,4 +170,19 @@ $(document).ready(function(){
   localStorage.setItem('synchronizePages', true);
   firstAJAX = true;
   JsonRequests();
+
+  $('#slider').slider({
+        'id': 'pSlider',
+        'min': 0,
+        'max': 10,
+        'step': 1,
+        'value': 5
+    });
+
+  $pSlider = $('#pSlider');
+  $btnSetPriority = $('#btnSetPriority');
+  $btnBackPriority = $('#btnBackPriority');
+  $pSlider.hide();
+  $lastLink = $pSlider;
+
 });
