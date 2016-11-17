@@ -70,6 +70,29 @@
        <a class="btn btn-primary btn-xs" 
 		      href="{% url "hello:south" %}?act=rc_fields">
             show RequestContent fields</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=delete_apps_hello_tables">
+            delete_apps_hello_tables</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=clear_history">
+            clear MigrationHistory</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=app_label">
+            show app_label</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=app_tables">
+            show app_tables</a>
+       <br><br>
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=table_already_exists">
+            ./manage.py migrate myapp --fake</a><br>
+       <p>if you already have the app_tables created in the database,<br>
+          you just need to run the initial migration as fake</p>
+
 
      <br><br><br><br><br><br><br><br>
      <br><br><br><br><br><br><br><br>
