@@ -140,6 +140,7 @@ window.onfocus = function() {
   JsonRequests();
   clearTimeout(checkReqTmr);
   $('title').text($initTitle);
+  $pSlider.hide();
 };
 
 
@@ -192,6 +193,10 @@ $('a.sort').click(function() {
 /* AJAX sorting requests by priority or date  */
 
   $('a.sort span').hide();
+  $('#pSlider, #btnSetPriority, #btnBackPriority').hide();
+  $('#req-content-column').prepend($pSlider, $btnSetPriority, $btnBackPriority);
+  $('#pColumn').removeClass('col-md-3');
+  if (!$lastLink.is($pSlider)) $lastLink.show();
 
   if ($(this).is('#dateColumn')) {
 
