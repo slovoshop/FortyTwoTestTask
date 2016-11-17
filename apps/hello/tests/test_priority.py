@@ -1,6 +1,7 @@
 
 from django.test import TestCase
 from apps.hello.models import RequestContent
+from django.core.urlresolvers import reverse
 import json
 
 

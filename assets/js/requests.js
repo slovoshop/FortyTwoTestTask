@@ -121,7 +121,7 @@ window.onblur = function() {
   checkReqTmr = setInterval(JsonRequests, 1500);
 
   $('#pSlider, #btnSetPriority, #btnBackPriority').hide();
-  $('#content-column').prepend($pSlider, $btnSetPriority, $btnBackPriority);
+  $('#req-content-column').prepend($pSlider, $btnSetPriority, $btnBackPriority);
   $('#pColumn').removeClass('col-md-3');
   $lastLink.show();
 }
@@ -186,5 +186,35 @@ $(document).ready(function(){
   $btnBackPriority = $('#btnBackPriority');
   $pSlider.hide();
   $lastLink = $pSlider;
+
+  $btnBackPriority.click(function() {
+    $('#pSlider, #btnSetPriority, #btnBackPriority').hide();
+    $('#pColumn').removeClass('col-md-3');
+    $lastLink.show();
+  });
+
+
+  $btnSetPriority.click(function() {
+    $('#pSlider, #btnSetPriority, #btnBackPriority').hide();
+    $('#content-column').prepend($pSlider, $btnSetPriority, $btnBackPriority);
+    $lastLink.show();
+    
+		$.ajax({
+			'url': location.href,
+			'type': 'POST',
+			'dataType': 'json',
+			'data': {
+				'pk': $lastLink.data('request-id'),
+				'priority': $('#slider').slider().data('slider').getValue(),
+				'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+			},
+			'error': function(xhr, status, error){
+				alert(error);
+			},
+			'success': function(data, status, xhr){
+				$(data.link_id).text(data.priority);
+			}
+		}); 
+  });
 
 });
