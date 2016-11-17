@@ -119,9 +119,11 @@ window.onfocus = function() {
 window.onblur = function() {
   localStorage.setItem('synchronizePages', false);
   checkReqTmr = setInterval(JsonRequests, 1500);
+
   $('#pSlider, #btnSetPriority, #btnBackPriority').hide();
   $('#content-column').prepend($pSlider, $btnSetPriority, $btnBackPriority);
   $('#pColumn').removeClass('col-md-3');
+  $lastLink.show();
 }
 
 
