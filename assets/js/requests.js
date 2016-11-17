@@ -4,6 +4,9 @@ var ajaxRequestsDB = 0;   // get requests count in DB after current AJAX
 var firstAJAX = false;    // init first ajax after loading request.html
 var checkReqTmr;          // timer for checking request's logs
 
+var sortingURL = '';
+var sortingMode = false;
+
 var $initTitle = $('title').text();
 var $pSlider, $btnSetPriority, $btnBackPriority, $lastLink;
 
@@ -42,28 +45,48 @@ function toDate(dateStr) {
 
 
 function JsonRequests() {
-	$.ajax({
+  $.ajax({
     type: 'GET',
-    url: location.href,
+    url: sortingURL,
     cache: false,
     dataType: 'json',
 
-	  success: function(data, status, xhr){
-		    var newContent;
-		    ajaxRequestsDB = data.dbcount;
+    beforeSend: function(xhr, settings){
+
+        if (sortingURL == location.href) {
+          $('a.sort span').hide();
+          $('span#defaultDate').show();
+          $('span#defaultPriority').show();
+        } else {
+          sortingMode = true;
+        }
+
+        $('a').attr('disabled', 'disabled');
+        console.log('sortingURL: ' + sortingURL);
+    },
+
+    success: function(data, status, xhr){
+
+       if (!sortingMode) {
+          ajaxRequestsDB = data.dbcount;
 		   
-		    if (firstAJAX) {
-		       onLoadRequestsDB = ajaxRequestsDB;
-		       firstAJAX = false;
-		    }
+          if (firstAJAX) {
+            onLoadRequestsDB = ajaxRequestsDB;
+            firstAJAX = false;
+          }
 
-		    var unreadRequests = ajaxRequestsDB - onLoadRequestsDB;
+          var unreadRequests = ajaxRequestsDB - onLoadRequestsDB;
 
-		    if (!unreadRequests || (localStorage.synchronizePages == 'true')) {
-		      $('title').text($initTitle);
-		    } else {
-		      $('title').text("(" + unreadRequests + ") unread");
-		    }
+          if (!unreadRequests || (localStorage.synchronizePages == 'true')) {
+            $('title').text($initTitle);
+          } else {
+            $('title').text("(" + unreadRequests + ") unread");
+          }
+
+        } else {
+          sortingMode = false;
+        }
+
 
         /* AJAX get data in JSON like that:
         {"dbcount": 701, 
@@ -84,7 +107,8 @@ function JsonRequests() {
                     ]
         }*/
 
-		    for (var i = 1; i <= data.reqlogs.length; i++) 
+        var newContent;
+        for (var i = 1; i <= data.reqlogs.length; i++) 
 
           newContent += '<tr><td>' + i + '</td>' +
             '<td>' + data.reqlogs[i-1].method + '</td>' +
@@ -97,11 +121,14 @@ function JsonRequests() {
             '" data-request-id="' + data.reqlogs[i-1].id + '">' + 
             data.reqlogs[i-1].priority + '</a></td></tr>';
 
-		    $('#requests-content').html(newContent);
+        $('#requests-content').html(newContent);
+        $('a').removeAttr('disabled');
     },
 
     error: function(xhr, status, error){
-		    console.log(error);
+
+        $('a').removeAttr('disabled');
+        console.log(error);
     }
   });
 }
@@ -161,6 +188,48 @@ window.addEventListener(
 );
 
 
+$('a.sort').click(function() {
+/* AJAX sorting requests by priority or date  */
+
+  $('a.sort span').hide();
+
+  if ($(this).is('#dateColumn')) {
+
+    $('span#defaultPriority').show();
+
+    if (sortingURL.contains("?date=0")) {
+      sortingURL = location.href + '?date=1';
+      $('span#oldestDate').show();
+    } else if(sortingURL.contains("?date=1")) {
+      sortingURL = location.href + '?date=0';
+      $('span#newestDate').show();
+    } else {
+      sortingURL = location.href + '?date=0';
+      $('span#newestDate').show();
+    }
+  } 
+
+  if ($(this).is('#priorityColumn')) {
+
+    $('span#defaultDate').show();
+
+    if (sortingURL.contains("?priority=0")) {
+      sortingURL = location.href + '?priority=1';
+      $('span#highPriority').show();
+    } else if(sortingURL.contains("?priority=1")) {
+      sortingURL = location.href + '?priority=0';
+      $('span#lowPriority').show();
+    } else {
+      sortingURL = location.href + '?priority=1';
+      $('span#highPriority').show();
+    }
+  }
+
+  JsonRequests();
+  return false;
+});
+
+
 $(document).ready(function(){
   /* when events 'onfocus' and 'ready' follow each other 
      than we set synchronizePages=true two times.
@@ -171,6 +240,8 @@ $(document).ready(function(){
   localStorage.setItem('synchronizePages', '');
   localStorage.setItem('synchronizePages', true);
   firstAJAX = true;
+  sortingURL = location.href;
+  sortingMode = false;
   JsonRequests();
 
   $('#slider').slider({
@@ -197,6 +268,7 @@ $(document).ready(function(){
   $btnSetPriority.click(function() {
     $('#pSlider, #btnSetPriority, #btnBackPriority').hide();
     $('#content-column').prepend($pSlider, $btnSetPriority, $btnBackPriority);
+    $('#pColumn').removeClass('col-md-3');
     $lastLink.show();
     
 		$.ajax({
