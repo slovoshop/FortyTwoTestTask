@@ -4,11 +4,12 @@ from optparse import make_option
 from django.conf import settings
 import os
 from south.models import MigrationHistory
-from apps.hello.models import RequestContent
+from apps.hello.models import RequestContent, AboutMe
 from urlparse import urlparse
 from PIL import Image
 from django.core.files.uploadedfile import SimpleUploadedFile
 import glob
+from django.db.models import get_app, get_models
 
 
 def FixBarista(command):
@@ -28,6 +29,10 @@ def FixBarista(command):
 
             result = MigrationHistory.objects.all()
             linebreaks = True
+
+        if command == 'clear_history':
+
+            result = MigrationHistory.objects.all().delete()
 
         if command == 'sh':
 
@@ -72,6 +77,11 @@ def FixBarista(command):
                                   "apps.hello",
                                   mlist=True,)
 
+        if command == 'delete_apps_hello_tables':
+
+            result = call_command("sqlclear",
+                                  "hello",)
+
         if command == 'delete_ghost_migrations':
 
             make_option('--delete-ghost-migrations',
@@ -100,6 +110,12 @@ def FixBarista(command):
                                   "0002",
                                   fake=True,)
 
+        if command == 'table_already_exists':
+
+            result = call_command("migrate",
+                                  "apps.hello",
+                                  fake=True,)
+
         if command == 'app_db':
 
             result = settings.DATABASES
@@ -110,10 +126,26 @@ def FixBarista(command):
                                   "apps.hello",
                                   "0002",)
 
+        if command == 'app_label':
+
+            rc = AboutMe.objects.first()
+            result = rc._meta.app_label
+
         if command == 'set_app_db':
 
             settings.DATABASES['default']['NAME'] = 'test8db.sqlite3'
             result = settings.DATABASES
+
+        if command == 'app_tables':
+
+            app = get_app('hello')
+            app_tables = []
+
+            for model in get_models(app, include_auto_created=True):
+                app_tables.append(model._meta.db_table)
+
+            result = app_tables
+            linebreaks = True
 
     except Exception as e:
         result = e
