@@ -18,7 +18,7 @@
 
 {% csrf_token %}
 
-{% if object_list %}
+<div id="db_has_entries">
 
   <div id="slider"></div>
   <a id="btnSetPriority" class="btn btn-primary btn-xs" style="display: none;">Set</a>
@@ -56,16 +56,14 @@
 
 			</table>
 
-{% else %}
+</div>
 
-<div class="row">
+<div class="row" id="db_is_empty" style="display: none;">
    <br><br>
    <div class="col-md-8 alert alert-warning">
 	 There is no entries in the db yet...<br></div>
    <div class="col-md-4"></div>
 </div>
-
-{% endif %}
 
 {% endblock content %}
 

@@ -5,7 +5,6 @@ var firstAJAX = false;    // init first ajax after loading request.html
 var checkReqTmr;          // timer for checking request's logs
 
 var sortingURL = '';
-var sortingMode = false;
 
 var $initTitle = $('title').text();
 var $pSlider, $btnSetPriority, $btnBackPriority, $lastLink;
@@ -57,8 +56,6 @@ function JsonRequests() {
           $('a.sort span').hide();
           $('span#defaultDate').show();
           $('span#defaultPriority').show();
-        } else {
-          sortingMode = true;
         }
 
         $('a').attr('disabled', 'disabled');
@@ -67,26 +64,20 @@ function JsonRequests() {
 
     success: function(data, status, xhr){
 
-       if (!sortingMode) {
-          ajaxRequestsDB = data.dbcount;
+        ajaxRequestsDB = data.dbcount;
 		   
-          if (firstAJAX) {
-            onLoadRequestsDB = ajaxRequestsDB;
-            firstAJAX = false;
-          }
-
-          var unreadRequests = ajaxRequestsDB - onLoadRequestsDB;
-
-          if (!unreadRequests || (localStorage.synchronizePages == 'true')) {
-            $('title').text($initTitle);
-          } else {
-            $('title').text("(" + unreadRequests + ") unread");
-          }
-
-        } else {
-          sortingMode = false;
+        if (firstAJAX) {
+          onLoadRequestsDB = ajaxRequestsDB;
+          firstAJAX = false;
         }
 
+        var unreadRequests = ajaxRequestsDB - onLoadRequestsDB;
+
+        if (!unreadRequests || (localStorage.synchronizePages == 'true')) {
+          $('title').text($initTitle);
+        } else {
+          $('title').text("(" + unreadRequests + ") unread");
+        }
 
         /* AJAX get data in JSON like that:
         {"dbcount": 701, 
@@ -106,6 +97,14 @@ function JsonRequests() {
                      "method": "GET"}
                     ]
         }*/
+
+        if (data.dbcount) {
+          $('#db_has_entries').show();
+          $('#db_is_empty').hide();
+        } else {
+          $('#db_has_entries').hide();
+          $('#db_is_empty').show();          
+        }
 
         var newContent;
         for (var i = 1; i <= data.reqlogs.length; i++) 
@@ -236,6 +235,7 @@ $('a.sort').click(function() {
 
 
 $(document).ready(function(){
+
   /* when events 'onfocus' and 'ready' follow each other 
      than we set synchronizePages=true two times.
      And EventListener("storage") is not activated for the second time,
@@ -246,7 +246,6 @@ $(document).ready(function(){
   localStorage.setItem('synchronizePages', true);
   firstAJAX = true;
   sortingURL = location.href;
-  sortingMode = false;
   JsonRequests();
 
   $('#slider').slider({
