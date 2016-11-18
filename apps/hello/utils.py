@@ -25,6 +25,10 @@ def FixBarista(command):
             result = rc._meta.get_all_field_names()
             linebreaks = True
 
+        if command == 'rc_clear':
+
+            result = RequestContent.objects.all().delete()
+
         if command == 'history':
 
             result = MigrationHistory.objects.all()
