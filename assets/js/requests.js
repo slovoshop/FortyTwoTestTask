@@ -5,6 +5,8 @@ var firstAJAX = false;    // init first ajax after loading request.html
 var checkReqTmr;          // timer for checking request's logs
 
 var sortingURL = '';
+var $dateColumn = $('#dateColumn');
+var $priorityColumn = $('#priorityColumn');
 
 var $initTitle = $('title').text();
 var $pSlider, $btnSetPriority, $btnBackPriority, $lastLink;
@@ -149,14 +151,14 @@ window.onblur = function() {
 
   $('#pSlider, #btnSetPriority, #btnBackPriority').hide();
   $('#req-content-column').prepend($pSlider, $btnSetPriority, $btnBackPriority);
-  $('#pColumn').removeClass('col-md-3');
+  $priorityColumn.removeClass('col-md-3');
   $lastLink.show();
 }
 
 
 $(document).on('click', 'a.priority', function() {
   $(this).hide();
-  $('#pColumn').addClass('col-md-3');
+  $priorityColumn.addClass('col-md-3');
   $(this).after($btnBackPriority, $pSlider, $btnSetPriority);
   $('#slider').slider().data('slider').setValue($(this).text());
   $('#btnBackPriority, #pSlider, #btnSetPriority').show();
@@ -191,41 +193,40 @@ window.addEventListener(
 $('a.sort').click(function() {
 /* AJAX sorting requests by priority or date  */
 
-  $('a.sort span').hide();
   $('#pSlider, #btnSetPriority, #btnBackPriority').hide();
   $('#req-content-column').prepend($pSlider, $btnSetPriority, $btnBackPriority);
-  $('#pColumn').removeClass('col-md-3');
+  $priorityColumn.removeClass('col-md-3');
   if (!$lastLink.is($pSlider)) $lastLink.show();
 
-  if ($(this).is('#dateColumn')) {
+  if ($(this).is($dateColumn)) {
 
-    $('span#defaultPriority').show();
+    $priorityColumn.html('Priority');
 
-    if (sortingURL.contains("?date=0")) {
+    if (sortingURL.includes("?date=0")) {
       sortingURL = location.href + '?date=1';
-      $('span#oldestDate').show();
-    } else if(sortingURL.contains("?date=1")) {
+      $dateColumn.html('Date&amp;Time&uarr;');
+    } else if(sortingURL.includes("?date=1")) {
       sortingURL = location.href + '?date=0';
-      $('span#newestDate').show();
+      $dateColumn.html('Date&amp;Time&darr;');
     } else {
       sortingURL = location.href + '?date=0';
-      $('span#newestDate').show();
+      $dateColumn.html('Date&amp;Time&darr;');
     }
   } 
 
-  if ($(this).is('#priorityColumn')) {
+  if ($(this).is($priorityColumn)) {
 
-    $('span#defaultDate').show();
+    $dateColumn.html('Date&amp;Time');
 
-    if (sortingURL.contains("?priority=0")) {
+    if (sortingURL.includes("?priority=0")) {
       sortingURL = location.href + '?priority=1';
-      $('span#highPriority').show();
-    } else if(sortingURL.contains("?priority=1")) {
+      $priorityColumn.html('High Priority&uarr;');
+    } else if(sortingURL.includes("?priority=1")) {
       sortingURL = location.href + '?priority=0';
-      $('span#lowPriority').show();
+      $priorityColumn.html('Low Priority&darr;');
     } else {
       sortingURL = location.href + '?priority=1';
-      $('span#highPriority').show();
+      $priorityColumn.html('High Priority&uarr;');
     }
   }
 
@@ -264,7 +265,7 @@ $(document).ready(function(){
 
   $btnBackPriority.click(function() {
     $('#pSlider, #btnSetPriority, #btnBackPriority').hide();
-    $('#pColumn').removeClass('col-md-3');
+    $priorityColumn.removeClass('col-md-3');
     $lastLink.show();
   });
 
@@ -272,7 +273,7 @@ $(document).ready(function(){
   $btnSetPriority.click(function() {
     $('#pSlider, #btnSetPriority, #btnBackPriority').hide();
     $('#content-column').prepend($pSlider, $btnSetPriority, $btnBackPriority);
-    $('#pColumn').removeClass('col-md-3');
+    $priorityColumn.removeClass('col-md-3');
     $lastLink.show();
     
 		$.ajax({
