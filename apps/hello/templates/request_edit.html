@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% load bootstrap %}
+
+{% block meta_title %}<title>Edit request</title>{% endblock meta_title %}
+
+{% block body_class %}main-area{% endblock %}
+
+{% block menu %}{% endblock %}
+
+{% block content_class %}col-md-10{% endblock %}
+
+{% block content_id %}req-edit-content{% endblock %}
+
+{% block content %}
+
+    <form method="post" class="form-horizontal">
+
+        {% csrf_token %}
+
+        {{ form|bootstrap_horizontal }}
+
+        <br><br><button class="btn btn-primary">Submit</button>
+
+    </form>
+
+{% endblock content %}
+
+{% block extra_js %}
+  <script src="{% static "js/formvalidator/jquery.form-validator.min.js" %}"></script>
+  <script src="{% static "js/jquery.form.min.js" %}"></script>
+  <script src="{% static "js/request_edit.js" %}"></script>
+{% endblock extra_js %}
+

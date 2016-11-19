@@ -101,3 +101,14 @@ text-align: right;
 .picture {
   margin-top: 1em;
 }
+
+#req-edit-content {
+  margin-top: 4em;
+}
+
+#id_method,
+#id_status_code, 
+#id_priority {
+  width: 10%;
+}
+

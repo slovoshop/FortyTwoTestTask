@@ -1,8 +1,9 @@
-from django.shortcuts import render
+
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import AboutMe, RequestContent
 from django.views.generic import ListView, UpdateView
-from .forms import ProfileUpdateForm
-from django.http import HttpResponse, HttpResponseBadRequest
+from .forms import ProfileUpdateForm, RequestUpdateForm
+from django.http import HttpResponse, HttpResponseBadRequest, Http404
 import json
 import utils
 from django.core.urlresolvers import reverse
@@ -108,6 +109,32 @@ class RequestsView(ListView):
 
         return HttpResponse(json.dumps(json_data),
                             content_type="application/json")
+
+
+@login_required
+def request_edit(request, req_id):
+    """
+    Returns page with form to edit request on GET.
+    Validates form and redirects to /request/ on POST."""
+
+    req = get_object_or_404(RequestContent, pk=req_id)
+
+    if request.method == 'GET':
+        form = RequestUpdateForm(instance=req)
+        return render(request, 'request_edit.html', {'form': form})
+
+    elif request.method == 'POST':
+        form = RequestUpdateForm(request.POST, instance=req)
+
+        if form.is_valid():
+            form.save()
+            return redirect(reverse('hello:request'))
+
+        else:
+            return render(request,
+                          'hello/request_edit.html',
+                          {'form': form})
+    raise Http404
 
 
 class ProfileUpdateView(UpdateView):
