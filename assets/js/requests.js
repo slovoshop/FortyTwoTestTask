@@ -117,8 +117,9 @@ function JsonRequests() {
             '<td>' + data.reqlogs[i-1].status_code + '</td>' +
             '<td>' + toDate(data.reqlogs[i-1].date) + '</td>' +
             '<td style="text-align: center;">' +
-            '<a class="priority" href="" ' + 
-            'id="priority_' + data.reqlogs[i-1].id + 
+            '<a class="priority" ' +
+            'href="/request/edit/' + data.reqlogs[i-1].id + 
+            '" id="priority_' + data.reqlogs[i-1].id + 
             '" data-request-id="' + data.reqlogs[i-1].id + '">' + 
             data.reqlogs[i-1].priority + '</a></td></tr>';
 
@@ -157,7 +158,7 @@ window.onblur = function() {
 
 
 $(document).on('click', 'a.priority', function() {
-  $(this).hide();
+  /*$(this).hide();
   $priorityColumn.addClass('col-md-3');
   $(this).after($btnBackPriority, $pSlider, $btnSetPriority);
   $('#slider').slider().data('slider').setValue($(this).text());
@@ -168,7 +169,8 @@ $(document).on('click', 'a.priority', function() {
   }
 
   $lastLink = $(this);
-  return false;
+  return false;*/
+  
 });
 
 

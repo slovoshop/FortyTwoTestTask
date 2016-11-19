@@ -1,6 +1,6 @@
 # -- coding: utf-8 --
 from django.forms import ModelForm
-from .models import AboutMe
+from .models import AboutMe, RequestContent
 from django import forms
 from widgets import DatePickerWidget
 from datetime import date, datetime
@@ -39,3 +39,17 @@ class ProfileUpdateForm(ModelForm):
             raise forms.ValidationError("Date is older than today.")
 
         return birthday
+
+
+class RequestUpdateForm(ModelForm):
+    ''' ModelForm maps RequestContent Model to a Form '''
+
+    class Meta:
+        model = RequestContent
+        widgets = {
+            'method': forms.TextInput(attrs={'class': 'form_widget'}),
+            'path': forms.TextInput(attrs={'class': 'form_widget'}),
+            'date': forms.TextInput(attrs={'class': 'form_widget'}),
+            'status_code': forms.TextInput(attrs={'class': 'form_widget'}),
+            'priority': forms.TextInput(attrs={'class': 'form_widget'}),
+        }
