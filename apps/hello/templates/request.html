@@ -2,8 +2,6 @@
 
 {% load static from staticfiles %}
 
-{% load bootstrap %}
-
 {% block meta_title %}<title id="requests_title">Requests</title>{% endblock meta_title %}
 
 {% block extra_head %}
@@ -50,6 +48,9 @@
    <div class="col-md-8 alert alert-warning">
 	 There is no entries in the db yet...<br></div>
    <div class="col-md-4"></div>
+</div>
+
+<div id="request_edition">
 </div>
 
 {% endblock content %}

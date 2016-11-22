@@ -1,17 +1,13 @@
 
+{% extends "base.html" %}
+
 {% load staticfiles %}
 
-<!DOCTYPE html>
-<html lang=”uk”>
+{% block meta_title %}<title>Fix south</title>{% endblock meta_title %}
 
-<head>
-  <title>South</title>
-  <link rel="stylesheet" href={% static 'css/bootstrap.min.css' %}>
-</head>
+{% block auth %}{% endblock %}
 
-<body>
-
-<div class="container" style="height: 100%;">
+{% block content %}
 
    <div class="row" style="margin-top: 2em;">
 		 <div class="col-md-6">
@@ -130,8 +126,4 @@
        {% endif %}           
    </div>
 
-</div>
-
-</body>
-
-</html>
+{% endblock content %}

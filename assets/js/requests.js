@@ -11,6 +11,8 @@ var $priorityColumn = $('#priorityColumn');
 var $initTitle = $('title').text();
 var $pSlider, $btnSetPriority, $btnBackPriority, $lastLink;
 
+var reqEditID = '/'; // request ID for the req_edit_form
+
 
 function toDate(dateStr) {  
  // convert "yyyy-mm-dd hh:mm:ss" string to date
@@ -116,10 +118,9 @@ function JsonRequests() {
             '<td>' + data.reqlogs[i-1].path + '</td>' +
             '<td>' + data.reqlogs[i-1].status_code + '</td>' +
             '<td>' + toDate(data.reqlogs[i-1].date) + '</td>' +
-            '<td style="text-align: center;">' +
-            '<a class="priority" ' +
-            'href="/request/edit/' + data.reqlogs[i-1].id + 
-            '" id="priority_' + data.reqlogs[i-1].id + 
+            '<td style="text-align: center;"><a class="priority"' +
+            ' id="priority_' + data.reqlogs[i-1].id + 
+            '" href="/request/edit/' + data.reqlogs[i-1].id +
             '" data-request-id="' + data.reqlogs[i-1].id + '">' + 
             data.reqlogs[i-1].priority + '</a></td></tr>';
 
@@ -170,7 +171,13 @@ $(document).on('click', 'a.priority', function() {
 
   $lastLink = $(this);
   return false;*/
-  
+  /*
+  $('#db_has_entries, #db_is_empty').hide();
+  $('#request_edition').show();
+  reqEditID = $(this).data('request-id');
+  $("#request_edition").load('/request/edit/' +reqEditID+ ' #req_edit_form');
+  */
+
 });
 
 

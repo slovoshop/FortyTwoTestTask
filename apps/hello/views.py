@@ -121,19 +121,25 @@ def request_edit(request, req_id):
 
     if request.method == 'GET':
         form = RequestUpdateForm(instance=req)
-        return render(request, 'request_edit.html', {'form': form})
+        return render(request, 'request_edit.html',
+                      {'form': form, 'req_id': req_id})
 
     elif request.method == 'POST':
         form = RequestUpdateForm(request.POST, instance=req)
 
         if form.is_valid():
             form.save()
-            return redirect(reverse('hello:request'))
+            if request.is_ajax():
+                profile_to_json = {'status': "success"}
+                return HttpResponse(json.dumps(profile_to_json),
+                                    content_type="application/json")
+            else:
+                return redirect(reverse('hello:request'))
 
-        else:
+        if form.is_invalid():
             return render(request,
                           'hello/request_edit.html',
-                          {'form': form})
+                          {'form': form, 'req_id': req_id})
     raise Http404
 
 
