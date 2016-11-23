@@ -9,9 +9,8 @@ var $dateColumn = $('#dateColumn');
 var $priorityColumn = $('#priorityColumn');
 
 var $initTitle = $('title').text();
-var $pSlider;
-var $reqEditBox = $('#request_edition');
 
+var $reqEditBox = $('#request_edition');
 var reqEditID = '/'; // request ID for the req_edit_form
 
 
@@ -146,7 +145,6 @@ window.onfocus = function() {
   firstAJAX = true;
   JsonRequests();
   $('title').text($initTitle);
-  if( $('#pSlider').length ) $pSlider.hide();
 };
 
 
@@ -155,8 +153,6 @@ window.onblur = function() {
   if ($reqEditBox.is(':visible')) return;
 
   checkReqTmr = setInterval(JsonRequests, 1500);
-  $pSlider.hide();
-  $('#req-content-column').prepend($pSlider);
 }
 
 
@@ -192,8 +188,6 @@ $(document).on('click', 'a.priority', function() {
       $.setupValidation(config);
       $.validate(); 
 
-      //$('#id_priority').after($pSlider);
-      //$pSlider.show();
     });
   
   return false;
@@ -204,8 +198,6 @@ $(document).on('click', '#req_edit_form a', function() {
 
   $("#request_edition").hide();
   $('#db_has_entries').show();
-  $('#req-content-column').prepend($pSlider);
-  $pSlider.hide();
 
   return false;
 });
@@ -282,17 +274,6 @@ $(document).ready(function(){
   firstAJAX = true;
   sortingURL = location.href;
   JsonRequests();
-
-  $('#slider').slider({
-        'id': 'pSlider',
-        'min': 0,
-        'max': 10,
-        'step': 1,
-        'value': 5
-    });
-
-  $pSlider = $('#pSlider');
-  $pSlider.hide();
 
   $.validate({
      modules : 'jsconf', // module needed for the request validation
