@@ -21,8 +21,6 @@
 <div id="db_has_entries">
 
   <div id="slider"></div>
-  <a id="btnSetPriority" class="btn btn-primary btn-xs" style="display: none;">Set</a>
-  <a id="btnBackPriority" class="btn btn-primary btn-xs" style="display: none;">Back</a>
 
 			<table class="table table-condensed">
 				<thead>
@@ -60,5 +58,6 @@
 
 {% block extra_js %}
   <script src="{% static "js/bootstrap-slider.js" %}"></script>
+  <script src="{% static "js/formvalidator/jquery.form-validator.min.js" %}"></script>
   <script src="{% static "js/requests.js" %}"></script>
 {% endblock extra_js %}

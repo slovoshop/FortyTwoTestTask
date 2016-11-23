@@ -25,7 +25,9 @@
 
         {{ form|bootstrap_horizontal }}
 
-        <br><br><button class="btn btn-primary">Submit</button>
+        <br><br>
+        <button class="btn btn-small btn-primary">Submit</button>
+        <a class="btn btn-small btn-primary" href="{% url 'hello:request' %}">Back</a>
 
     </form>
   </div>
