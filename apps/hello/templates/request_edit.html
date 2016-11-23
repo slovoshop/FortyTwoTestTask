@@ -16,21 +16,26 @@
 
 {% block content %}
 
-    <form method="post" class="form-horizontal">
+  <div>
+    <form id="req_edit_form" class="form-horizontal" 
+          action="{% url 'hello:request_edit' req_id %}" method="POST" 
+          enctype="multipart/form-data">
 
         {% csrf_token %}
 
         {{ form|bootstrap_horizontal }}
 
-        <br><br><button class="btn btn-primary">Submit</button>
+        <br><br>
+        <button class="btn btn-small btn-primary">Submit</button>
+        <a class="btn btn-small btn-primary" href="{% url 'hello:request' %}">Back</a>
 
     </form>
+  </div>
 
 {% endblock content %}
 
 {% block extra_js %}
   <script src="{% static "js/formvalidator/jquery.form-validator.min.js" %}"></script>
-  <script src="{% static "js/jquery.form.min.js" %}"></script>
   <script src="{% static "js/request_edit.js" %}"></script>
 {% endblock extra_js %}
 

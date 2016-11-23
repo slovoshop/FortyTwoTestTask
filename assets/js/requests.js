@@ -9,7 +9,10 @@ var $dateColumn = $('#dateColumn');
 var $priorityColumn = $('#priorityColumn');
 
 var $initTitle = $('title').text();
-var $pSlider, $btnSetPriority, $btnBackPriority, $lastLink;
+var $pSlider;
+var $reqEditBox = $('#request_edition');
+
+var reqEditID = '/'; // request ID for the req_edit_form
 
 
 function toDate(dateStr) {  
@@ -116,10 +119,9 @@ function JsonRequests() {
             '<td>' + data.reqlogs[i-1].path + '</td>' +
             '<td>' + data.reqlogs[i-1].status_code + '</td>' +
             '<td>' + toDate(data.reqlogs[i-1].date) + '</td>' +
-            '<td style="text-align: center;">' +
-            '<a class="priority" ' +
-            'href="/request/edit/' + data.reqlogs[i-1].id + 
-            '" id="priority_' + data.reqlogs[i-1].id + 
+            '<td style="text-align: center;"><a class="priority"' +
+            ' id="priority_' + data.reqlogs[i-1].id + 
+            '" href="/request/edit/' + data.reqlogs[i-1].id +
             '" data-request-id="' + data.reqlogs[i-1].id + '">' + 
             data.reqlogs[i-1].priority + '</a></td></tr>';
 
@@ -137,40 +139,75 @@ function JsonRequests() {
 
 
 window.onfocus = function() {
+  clearTimeout(checkReqTmr);
+  if ($reqEditBox.is(':visible')) return;
+
   localStorage.setItem('synchronizePages', true);
   firstAJAX = true;
   JsonRequests();
-  clearTimeout(checkReqTmr);
   $('title').text($initTitle);
-  $pSlider.hide();
+  if( $('#pSlider').length ) $pSlider.hide();
 };
 
 
 window.onblur = function() {
   localStorage.setItem('synchronizePages', false);
-  checkReqTmr = setInterval(JsonRequests, 1500);
+  if ($reqEditBox.is(':visible')) return;
 
-  $('#pSlider, #btnSetPriority, #btnBackPriority').hide();
-  $('#req-content-column').prepend($pSlider, $btnSetPriority, $btnBackPriority);
-  $priorityColumn.removeClass('col-md-3');
-  $lastLink.show();
+  checkReqTmr = setInterval(JsonRequests, 1500);
+  $pSlider.hide();
+  $('#req-content-column').prepend($pSlider);
 }
 
 
 $(document).on('click', 'a.priority', function() {
-  /*$(this).hide();
-  $priorityColumn.addClass('col-md-3');
-  $(this).after($btnBackPriority, $pSlider, $btnSetPriority);
-  $('#slider').slider().data('slider').setValue($(this).text());
-  $('#btnBackPriority, #pSlider, #btnSetPriority').show();
-
-  if (!$(this).is($lastLink)) {
-    $lastLink.show();
-  }
-
-  $lastLink = $(this);
-  return false;*/
   
+  $('#db_has_entries, #db_is_empty').hide();
+  $reqEditBox.show();
+
+  reqEditID = $(this).data('request-id');
+
+  $("#request_edition").load('/request/edit/' +reqEditID+ ' #req_edit_form', 
+    function() {
+
+      var config = { /* http://www.formvalidator.net */
+        form : 'form',
+        validate : {
+            '#id_priority' : {
+            'validation' : 'number',
+            'allowing': 'range[0;10]',
+            'error-msg': 'Number must be in range 0-10'
+            },
+            '#id_status_code' : {
+            'validation' : 'number'
+            },
+            '#id_method' : {
+            'validation' : 'length',
+            'length' : '3-6',
+            'error-msg': 'Enter one of GET, POST, PUT, DELETE'
+            }
+        }
+      };
+
+      $.setupValidation(config);
+      $.validate(); 
+
+      //$('#id_priority').after($pSlider);
+      //$pSlider.show();
+    });
+  
+  return false;
+});
+
+
+$(document).on('click', '#req_edit_form a', function() {
+
+  $("#request_edition").hide();
+  $('#db_has_entries').show();
+  $('#req-content-column').prepend($pSlider);
+  $pSlider.hide();
+
+  return false;
 });
 
 
@@ -194,11 +231,6 @@ window.addEventListener(
 
 $('a.sort').click(function() {
 /* AJAX sorting requests by priority or date  */
-
-  $('#pSlider, #btnSetPriority, #btnBackPriority').hide();
-  $('#req-content-column').prepend($pSlider, $btnSetPriority, $btnBackPriority);
-  $priorityColumn.removeClass('col-md-3');
-  if (!$lastLink.is($pSlider)) $lastLink.show();
 
   if ($(this).is($dateColumn)) {
 
@@ -260,40 +292,10 @@ $(document).ready(function(){
     });
 
   $pSlider = $('#pSlider');
-  $btnSetPriority = $('#btnSetPriority');
-  $btnBackPriority = $('#btnBackPriority');
   $pSlider.hide();
-  $lastLink = $pSlider;
 
-  $btnBackPriority.click(function() {
-    $('#pSlider, #btnSetPriority, #btnBackPriority').hide();
-    $priorityColumn.removeClass('col-md-3');
-    $lastLink.show();
-  });
-
-
-  $btnSetPriority.click(function() {
-    $('#pSlider, #btnSetPriority, #btnBackPriority').hide();
-    $('#content-column').prepend($pSlider, $btnSetPriority, $btnBackPriority);
-    $priorityColumn.removeClass('col-md-3');
-    $lastLink.show();
-    
-		$.ajax({
-			'url': location.href,
-			'type': 'POST',
-			'dataType': 'json',
-			'data': {
-				'pk': $lastLink.data('request-id'),
-				'priority': $('#slider').slider().data('slider').getValue(),
-				'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
-			},
-			'error': function(xhr, status, error){
-				alert(error);
-			},
-			'success': function(data, status, xhr){
-				$(data.link_id).text(data.priority);
-			}
-		}); 
-  });
+  $.validate({
+     modules : 'jsconf', // module needed for the request validation
+  }); 
 
 });

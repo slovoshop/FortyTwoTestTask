@@ -112,3 +112,11 @@ text-align: right;
   width: 10%;
 }
 
+#id_path {
+  width: 70%;
+}
+
+#request_edition {
+  padding-top: 2em; 
+  padding-bottom: 2em;
+}
