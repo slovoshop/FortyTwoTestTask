@@ -1,5 +1,6 @@
 
 var billboard = $('#billboard');
+var msgArray;
 
 		var dateOptions = {
 			month:  'short',
@@ -14,13 +15,34 @@ var billboard = $('#billboard');
 function sendMessage() {
   var now = new Date();
 
-  msg = $('#user').val() + '^' +
+  var msg = $('#user').val() + '^' +
         now.toLocaleString("en-US", dateOptions) + '^' +
         $('#text_message').val();
 
   localStorage.setItem('newMessage', msg);
-  console.log(msg);
+
+  msgArray = msg.split("^");
+
+  billboard.append('<br/><b>' + 
+                     msgArray[0] + '</b> ' +
+                     msgArray[1] + '<br>' +
+                     msgArray[2]);
+  billboard.scrollTop(billboard.scrollTop() + 25);
 }
+
+
+function receiveMessage(msg) { 
+  if (msg.key == 'newMessage') {
+
+    msgArray = msg.newValue.split("^");
+
+    billboard.append('<br/><b>' + 
+                     msgArray[0] + '</b> ' +
+                     msgArray[1] + '<br>' +
+                     msgArray[2]);
+    billboard.scrollTop(billboard.scrollTop() + 25);
+  } 
+} 
 
 
 $(document).ready(function() {
@@ -33,5 +55,7 @@ $(document).ready(function() {
       sendMessage();
     }
   });
+
+  window.addEventListener("storage", receiveMessage, false);
 
 });
