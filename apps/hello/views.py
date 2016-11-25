@@ -11,6 +11,7 @@ import logging
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 import os
+from django.contrib.auth.models import User
 
 
 logger = logging.getLogger(__name__)
@@ -211,3 +212,9 @@ class ProfileUpdateView(UpdateView):
                           content_type="application/json")
 
         return super(ProfileUpdateView, self).post(request, *args, **kwargs)
+
+
+def userchat(request):
+    return render(request,
+                  'dialogs.html',
+                  {'users': User.objects.all()})
