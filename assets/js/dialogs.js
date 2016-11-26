@@ -70,6 +70,11 @@ window.onblur = function() {
 
 $(document).ready(function() {
 
+  var ws4redis = WS4Redis({
+    uri: '{{ WEBSOCKET_URI }}dialogs?subscribe-user',
+    receive_message: receiveMessage
+  });
+
   $('#send_message').click(sendMessage);
 
   $message.keydown(function(event) {
