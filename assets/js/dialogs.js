@@ -15,9 +15,10 @@ var msgArray;
 function sendMessage() {
   var now = new Date();
 
-  var msg = $('#user').val() + '^' +
-        now.toLocaleString("en-US", dateOptions) + '^' +
-        $('#text_message').val();
+  var msg = $('#text_message').data('sender') + '^' +
+            $('#user').val() + '^' +
+            now.toLocaleString("en-US", dateOptions) + '^' +
+            $('#text_message').val();
 
   localStorage.setItem('newMessage', msg);
 
@@ -25,8 +26,8 @@ function sendMessage() {
 
   billboard.append('<br/><b>' + 
                      msgArray[0] + '</b> ' +
-                     msgArray[1] + '<br>' +
-                     msgArray[2]);
+                     msgArray[2] + '<br>' +
+                     msgArray[3]);
   billboard.scrollTop(billboard.scrollTop() + 25);
 }
 
@@ -38,8 +39,8 @@ function receiveMessage(msg) {
 
     billboard.append('<br/><b>' + 
                      msgArray[0] + '</b> ' +
-                     msgArray[1] + '<br>' +
-                     msgArray[2]);
+                     msgArray[2] + '<br>' +
+                     msgArray[3]);
     billboard.scrollTop(billboard.scrollTop() + 25);
   } 
 } 
