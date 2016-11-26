@@ -214,6 +214,7 @@ class ProfileUpdateView(UpdateView):
         return super(ProfileUpdateView, self).post(request, *args, **kwargs)
 
 
+@login_required
 def userchat(request):
     return render(request,
                   'dialogs.html',

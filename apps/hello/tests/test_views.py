@@ -225,4 +225,28 @@ class ProfileEditViewTests(TestCase):
             self.assertEqual(profile.serializable_value(field),
                              data[field])
 
+
+class TestChatView(TestCase):
+    """ chat view test case """
+
+    def setUp(self):
+
+        self.client.login(username='admin', password='admin')
+        self.url = reverse('hello:user_chat')
+        self.response = self.client.get(self.url)
+
+    def test_chat_is_returned(self):
+        """ test view returns the correct template """
+
+        self.assertEqual(self.response.status_code, 200)
+        self.assertTemplateUsed(self.response, 'dialogs.html')
+
+    def test_messages_in_context(self):
+        """ check for messages in the context """
+
+        self.assertTrue('messages' in self.response.context)
+        data = self.response.context['messages']
+        self.assertEqual(data[0]['sender'], 'User-1')
+        self.assertEqual(data[0]['text'], 'Get hardcoded message 1')
+
         RemoveTestImages()
