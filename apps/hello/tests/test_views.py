@@ -250,3 +250,20 @@ class TestChatView(TestCase):
         self.assertEqual(data[0]['text'], 'Get hardcoded message 1')
 
         RemoveTestImages()
+
+    def test_ajax_post(self):
+        """
+        Test ajax post after sending new message
+        """
+
+        response = self.client.post(reverse('hello:user_chat'),
+                                    data={'sender': 'Jaroslav',
+                                          'receiver': 'Andrey',
+                                          'date': 'Nov 26, 2016, 9:00:00 AM',
+                                          'text': 'There is news', },
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        data = json.loads(response.content.decode())
+        total_text = 'Jaroslav^Andrey^Nov 26, 2016, 9:00:00 AM^There is news'
+
+        self.assertEqual(data['message'], total_text)

@@ -18,6 +18,7 @@ var	dateOptions = {
 
 
 function sendMessage() {
+
   var now = new Date();
 
   var msg = $message.data('sender') + '^' +
