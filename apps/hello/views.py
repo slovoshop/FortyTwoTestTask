@@ -12,6 +12,7 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 import os
 from django.contrib.auth.models import User
+from django.views.decorators.csrf import csrf_exempt
 
 
 logger = logging.getLogger(__name__)
@@ -215,6 +216,7 @@ class ProfileUpdateView(UpdateView):
 
 
 @login_required
+@csrf_exempt
 def userchat(request):
     messages = ()
 
@@ -224,6 +226,16 @@ def userchat(request):
                    'date': 'Nov 26, 2016, 9:00:00 AM',
                    'text': 'Get hardcoded message ' + str(i+1)},
                   )
+
+    if request.method == 'POST':
+
+        data = request.POST
+        message = data['sender'] + '^' + data['receiver'] + '^' +\
+            data['date'] + '^' + data['text']
+
+        json_data = {'message': message}
+        return HttpResponse(json.dumps(json_data),
+                            content_type="application/json")
 
     return render(request,
                   'dialogs.html',

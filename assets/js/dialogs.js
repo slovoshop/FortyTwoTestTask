@@ -21,20 +21,22 @@ function sendMessage() {
 
   var now = new Date();
 
-  var msg = $message.data('sender') + '^' +
-            $('#user').val() + '^' +
-            now.toLocaleString("en-US", dateOptions) + '^' +
-            $message.val();
+  $.post(location.href, {
+    sender: $message.data('sender'),
+    receiver: $('#user').val(),
+    date: now.toLocaleString("en-US", dateOptions),
+    text: $message.val()})
+    .done(function(data) {
+       var msgArray = data.message.split("^");
 
-  localStorage.setItem('newMessage', msg);
+       $billboard.append('<br/><b>' + 
+                        msgArray[0] + '</b> ' +
+                        msgArray[2] + '<br>' +
+                        msgArray[3]);
+       $billboard.scrollTop($billboard.scrollTop() + 25);
 
-  msgArray = msg.split("^");
-
-  $billboard.append('<br/><b>' + 
-                     msgArray[0] + '</b> ' +
-                     msgArray[2] + '<br>' +
-                     msgArray[3]);
-  $billboard.scrollTop($billboard.scrollTop() + 25);
+       localStorage.setItem('newMessage', data.message);
+    });
 }
 
 
