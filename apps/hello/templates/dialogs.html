@@ -12,7 +12,11 @@
 <p>Point a second browser onto this URL, login and check for message synchronization.</p>
 
 		<div class="row">
-				<pre id="billboard" style="overflow-y: auto; height: 24em; margin-top: 1em;"></pre>
+				<pre id="billboard" style="overflow-y: auto; height: 24em; margin-top: 1em;">
+        {% for message in messages %}
+<b>{{ message.sender }}</b>  {{ message.date }}<br>{{ message.text }}
+        {% endfor %}
+        </pre>
 		</div>
 
 		<div class="row">

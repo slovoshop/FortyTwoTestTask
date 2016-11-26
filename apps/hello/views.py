@@ -216,6 +216,16 @@ class ProfileUpdateView(UpdateView):
 
 @login_required
 def userchat(request):
+    messages = ()
+
+    for i in range(4):
+        messages += (
+                  {'sender': 'User-' + str(i+1),
+                   'date': 'Nov 26, 2016, 9:00:00 AM',
+                   'text': 'Get hardcoded message ' + str(i+1)},
+                  )
+
     return render(request,
                   'dialogs.html',
-                  {'users': User.objects.all()})
+                  {'messages': messages,
+                   'users': User.objects.all()})
