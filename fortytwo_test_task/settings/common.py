@@ -46,6 +46,7 @@ INSTALLED_APPS = (
     'south',
     'apps.hello',
     'bootstrapform',
+    'ws4redis',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -62,6 +63,23 @@ ROOT_URLCONF = 'fortytwo_test_task.urls'
 
 WSGI_APPLICATION = 'fortytwo_test_task.wsgi.application'
 
+# This setting is required to override the Django's main loop, when running in
+# development mode, such as ./manage runserver (42cc: make run)
+# WSGI_APPLICATION = 'ws4redis.django_runserver.application'
+
+# URL that distinguishes websocket connections from normal requests
+WEBSOCKET_URL = '/ws/'
+
+# Set the number of seconds each message shall persited
+WS4REDIS_EXPIRE = 3600
+
+WS4REDIS_HEARTBEAT = '--heartbeat--'
+
+WS4REDIS_PREFIX = 'ws'
+
+SESSION_ENGINE = 'redis_sessions.session'
+
+SESSION_REDIS_PREFIX = 'session'
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases

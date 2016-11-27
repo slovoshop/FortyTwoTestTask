@@ -73,12 +73,11 @@ window.onblur = function() {
 
 $(document).ready(function() {
 
-  /*
   var ws4redis = WS4Redis({
     uri: '{{ WEBSOCKET_URI }}dialogs?subscribe-user',
-    receive_message: receiveMessage
+    receive_message: receiveMessage,
+    heartbeat_msg: {{ WS4REDIS_HEARTBEAT }}
   });
-  */
 
   $('#send_message').click(sendMessage);
 
