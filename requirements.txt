@@ -6,3 +6,4 @@ django-bootstrap-form
 Pillow==2.9.0
 django-websocket-redis
 django-redis-sessions
+uwsgi

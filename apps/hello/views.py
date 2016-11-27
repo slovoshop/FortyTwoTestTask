@@ -13,6 +13,8 @@ from django.contrib.auth.decorators import login_required
 import os
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
+from ws4redis.redis_store import RedisMessage
+from ws4redis.publisher import RedisPublisher
 
 
 logger = logging.getLogger(__name__)
@@ -230,12 +232,13 @@ def userchat(request):
     if request.method == 'POST':
 
         data = request.POST
-        message = data['sender'] + '^' + data['receiver'] + '^' +\
+        total_text = data['sender'] + '^' +\
             data['date'] + '^' + data['text']
 
-        json_data = {'message': message}
-        return HttpResponse(json.dumps(json_data),
-                            content_type="application/json")
+        redis_publisher = RedisPublisher(facility='dialogs', users=[data['receiver']])
+        message = RedisMessage(total_text)
+        redis_publisher.publish_message(message)
+        return HttpResponse('OK')
 
     return render(request,
                   'dialogs.html',

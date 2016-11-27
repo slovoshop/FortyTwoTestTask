@@ -27,23 +27,14 @@ function sendMessage() {
     date: now.toLocaleString("en-US", dateOptions),
     text: $message.val()})
     .done(function(data) {
-       var msgArray = data.message.split("^");
-
-       $billboard.append('<br/><b>' + 
-                        msgArray[0] + '</b> ' +
-                        msgArray[2] + '<br>' +
-                        msgArray[3]);
-       $billboard.scrollTop($billboard.scrollTop() + 25);
-
-       localStorage.setItem('newMessage', data.message);
+       console.log('ajax post is OK');
     });
 }
 
 
 function receiveMessage(msg) { 
-  if (msg.key == 'newMessage') {
 
-    msgArray = msg.newValue.split("^");
+    msgArray = msg.split("^");
 
     $billboard.append('<br/><b>' + 
                      msgArray[0] + '</b> ' +
@@ -55,7 +46,6 @@ function receiveMessage(msg) {
       unread++;
       $('title').text("(" + unread + ") unread");
     }
-  } 
 } 
 
 
