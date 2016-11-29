@@ -143,7 +143,7 @@
 $(document).ready(function() {
    $("#open").click(function() {
        $.ajax({
-           url : "/sh.txt",
+           url : "sh.txt",
            dataType: "text",
            success : function (data) {
                $("#text").text(data);
