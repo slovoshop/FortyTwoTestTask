@@ -93,7 +93,6 @@
 		      href="{% url "hello:south" %}?act=rc_clear">
             clear RequestContent table</a>
 
-
        <br><br><br>
 
        <a class="btn btn-primary btn-xs" 
@@ -108,6 +107,16 @@
 		      href="{% url "hello:south" %}?act=app_tables">
             show app_tables</a>
 
+       <br><br><br>
+
+       <a class="btn btn-primary btn-xs" 
+		      href="{% url "hello:south" %}?act=redis_ping">
+            Redis PING</a>
+
+       <br><br><br>
+
+       <input id="open" type="button" value="READ" />
+       <textarea name="text" rows="20" cols="70">load sh.txt</textarea>
 
      <br><br><br><br><br><br><br><br>
      <br><br><br><br><br><br><br><br>
@@ -129,6 +138,20 @@
 {% endblock content %}
 
 {% block extra_js %}
-<script src="{% static "js/formvalidator/jquery.form-validator.min.js" %}"></script>
+<script>
+
+$(document).ready(function() {
+   $("#open").click(function() {
+       $.ajax({
+           url : "/sh.txt",
+           dataType: "text",
+           success : function (data) {
+               $("#text").text(data);
+           }
+       });
+   });
+}); 
+
+</script>
 {% endblock extra_js %}
 

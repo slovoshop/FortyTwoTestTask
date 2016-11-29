@@ -16,7 +16,7 @@
   {% if user.is_authenticated %}
      <a id="edit" href="{% url "hello:edit" bio.pk %}" title="Edit via FORM"> Edit | </a>
      <a href="{% edit_link bio %}" title="Edit via ADMIN">Admin</a>
-     <a href="{% url 'accounts:logout' %}?next=/"> | Logout </a>
+     <a href="{% url 'accounts:logout' %}?next=/"> | Logout ({{ request.user.username }}) </a>
   {% else %}
      <a href="{% url 'accounts:login' %}?next=/' %}"> Login </a>
   {% endif %}

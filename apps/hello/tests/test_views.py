@@ -263,7 +263,4 @@ class TestChatView(TestCase):
                                           'text': 'There is news', },
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
-        data = json.loads(response.content.decode())
-        total_text = 'Jaroslav^Andrey^Nov 26, 2016, 9:00:00 AM^There is news'
-
-        self.assertEqual(data['message'], total_text)
+        self.assertEqual(response.reason_phrase, 'OK')

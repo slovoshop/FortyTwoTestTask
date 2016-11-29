@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import AboutMe, RequestContent
@@ -235,7 +236,8 @@ def userchat(request):
         total_text = data['sender'] + '^' +\
             data['date'] + '^' + data['text']
 
-        redis_publisher = RedisPublisher(facility='dialogs', users=[data['receiver']])
+        redis_publisher = RedisPublisher(facility='dialogs',
+                                         users=[data['receiver']])
         message = RedisMessage(total_text)
         redis_publisher.publish_message(message)
         return HttpResponse('OK')

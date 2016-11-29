@@ -38,13 +38,15 @@ function receiveMessage(msg) {
 
     $billboard.append('<br/><b>' + 
                      msgArray[0] + '</b> ' +
-                     msgArray[2] + '<br>' +
-                     msgArray[3]);
+                     msgArray[1] + '<br>' +
+                     msgArray[2]);
     $billboard.scrollTop($billboard.scrollTop() + 25);
 
     if (!chatFocused) {
       unread++;
       $('title').text("(" + unread + ") unread");
+    } else {
+      $('title').text($initTitle);
     }
 } 
 
@@ -60,24 +62,3 @@ window.onblur = function() {
   chatFocused = false;
 };
 
-
-$(document).ready(function() {
-
-  var ws4redis = WS4Redis({
-    uri: '{{ WEBSOCKET_URI }}dialogs?subscribe-user',
-    receive_message: receiveMessage,
-    heartbeat_msg: {{ WS4REDIS_HEARTBEAT }}
-  });
-
-  $('#send_message').click(sendMessage);
-
-  $message.keydown(function(event) {
-    if (event.keyCode === 13) {
-      event.preventDefault();
-      sendMessage();
-    }
-  });
-
-  window.addEventListener("storage", receiveMessage, false);
-
-});

@@ -151,6 +151,10 @@ def FixBarista(command):
             result = app_tables
             linebreaks = True
 
+        if command == 'redis_ping':
+
+            result = os.system('redis-cli ping')
+
     except Exception as e:
         result = e
 
