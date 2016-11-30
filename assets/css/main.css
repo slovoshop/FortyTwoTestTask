@@ -77,6 +77,10 @@ body {
   color: green;
 }
 
+.spacing1em {
+  margin-top: 1em; 
+}
+
 .spacing2em {
   margin-top: 2em; /* interval between the rows in edit.html */
 }
@@ -119,4 +123,13 @@ text-align: right;
 #request_edition {
   padding-top: 2em; 
   padding-bottom: 2em;
+}
+
+.borderline {
+  border: 1px solid red;
+}
+
+.southspacing {
+  margin-top: 1em;
+  margin-bottom: 6em;
 }

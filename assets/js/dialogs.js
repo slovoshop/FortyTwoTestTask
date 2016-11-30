@@ -25,8 +25,8 @@ function sendMessage() {
     sender: $message.data('sender'),
     receiver: $('#user').val(),
     date: now.toLocaleString("en-US", dateOptions),
-    text: $message.val()})
-    .done(function(data) {
+    text: $message.val()
+    }).done(function(data) {
        console.log('ajax post is OK');
     });
 }

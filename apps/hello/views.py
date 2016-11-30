@@ -16,6 +16,7 @@ from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from ws4redis.redis_store import RedisMessage
 from ws4redis.publisher import RedisPublisher
+from django.conf import settings
 
 
 logger = logging.getLogger(__name__)
@@ -44,10 +45,24 @@ def home(request):
                   {'bio': bio, 'photo_exists': photo_exists})
 
 
+@csrf_exempt
 def fix_migrations_on_barista(request):
     ''' Solve problem with migrations on barista '''
 
     command = request.GET.get('act', '')
+
+    if command == 'read_txt':
+
+        fileContent = ''
+        text_file = os.path.join(settings.BASE_DIR, 'setup.txt')
+        file = open(text_file)
+
+        for line in file:
+            fileContent += line
+
+        json_data = {'fileContent': fileContent}
+        return HttpResponse(json.dumps(json_data),
+                            content_type="application/json")
 
     result, linebreaks = utils.FixBarista(command)
 
@@ -221,14 +236,6 @@ class ProfileUpdateView(UpdateView):
 @login_required
 @csrf_exempt
 def userchat(request):
-    messages = ()
-
-    for i in range(4):
-        messages += (
-                  {'sender': 'User-' + str(i+1),
-                   'date': 'Nov 26, 2016, 9:00:00 AM',
-                   'text': 'Get hardcoded message ' + str(i+1)},
-                  )
 
     if request.method == 'POST':
 
@@ -244,5 +251,4 @@ def userchat(request):
 
     return render(request,
                   'dialogs.html',
-                  {'messages': messages,
-                   'users': User.objects.all()})
+                  {'users': User.objects.all()})

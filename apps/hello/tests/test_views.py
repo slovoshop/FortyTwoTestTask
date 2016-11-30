@@ -241,16 +241,6 @@ class TestChatView(TestCase):
         self.assertEqual(self.response.status_code, 200)
         self.assertTemplateUsed(self.response, 'dialogs.html')
 
-    def test_messages_in_context(self):
-        """ check for messages in the context """
-
-        self.assertTrue('messages' in self.response.context)
-        data = self.response.context['messages']
-        self.assertEqual(data[0]['sender'], 'User-1')
-        self.assertEqual(data[0]['text'], 'Get hardcoded message 1')
-
-        RemoveTestImages()
-
     def test_ajax_post(self):
         """
         Test ajax post after sending new message
@@ -264,3 +254,5 @@ class TestChatView(TestCase):
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
         self.assertEqual(response.reason_phrase, 'OK')
+
+        RemoveTestImages()
