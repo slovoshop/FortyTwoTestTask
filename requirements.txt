@@ -4,7 +4,4 @@ flake8
 South==1.0.2
 django-bootstrap-form
 Pillow==2.9.0
-redis==2.10.3
-django-websocket-redis
-django-redis-sessions
 

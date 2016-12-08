@@ -1,5 +1,6 @@
 MANAGE=django-admin.py
 SETTINGS=fortytwo_test_task.settings
+TEST_FOLDER_HELLO=apps/hello/tests/
 
 test: check_noqa
 	PYTHONPATH=`pwd` DJANGO_SETTINGS_MODULE=$(SETTINGS) $(MANAGE) test
@@ -28,3 +29,7 @@ collectstatic:
 req:
 	@echo "Installing requirements"
 	@pip install --exists-action=s -r requirements.txt
+
+ftest:
+	PYTHONPATH=`pwd` DJANGO_SETTINGS_MODULE=$(SETTINGS) $ python \
+	$(TEST_FOLDER_HELLO)functional_tests.py

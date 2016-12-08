@@ -18,36 +18,10 @@ var	dateOptions = {
 
 
 function sendMessage() {
-
-  var now = new Date();
-
-  $.post(location.href, {
-    sender: $message.data('sender'),
-    receiver: $('#user').val(),
-    date: now.toLocaleString("en-US", dateOptions),
-    text: $message.val()
-    }).done(function(data) {
-       console.log('ajax post is OK');
-    });
 }
 
 
 function receiveMessage(msg) { 
-
-    msgArray = msg.split("^");
-
-    $billboard.append('<br/><b>' + 
-                     msgArray[0] + '</b> ' +
-                     msgArray[1] + '<br>' +
-                     msgArray[2]);
-    $billboard.scrollTop($billboard.scrollTop() + 25);
-
-    if (!chatFocused) {
-      unread++;
-      $('title').text("(" + unread + ") unread");
-    } else {
-      $('title').text($initTitle);
-    }
 } 
 
 

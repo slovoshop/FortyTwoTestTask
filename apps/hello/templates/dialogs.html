@@ -37,33 +37,5 @@
 
 {% block extra_js %}
 <script src="{% static "js/bootstrap.min.js" %}"></script>
-<script src="{% static "js/ws4redis.js" %}"></script>
 <script src="{% static "js/dialogs.js" %}"></script>
-
-<script>
-// if you put this code in a separate script then 
-// values from TEMPLATE_CONTEXT_PROCESSORS will be unavailable
-
-jQuery(document).ready(function($) {
-
-  chatFocused = true;
-
-  var ws4redis = WS4Redis({
-    uri: '{{ WEBSOCKET_URI }}dialogs?subscribe-user',
-    receive_message: receiveMessage,
-    heartbeat_msg: {{ WS4REDIS_HEARTBEAT }}
-  });
-
-  $('#send_message').click(sendMessage);
-
-  $message.keydown(function(event) {
-    if (event.keyCode === 13) {
-      event.preventDefault();
-      sendMessage();
-    }
-  });
-
-});
-
-</script>
 {% endblock extra_js %}

@@ -14,8 +14,6 @@ from django.contrib.auth.decorators import login_required
 import os
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
-from ws4redis.redis_store import RedisMessage
-from ws4redis.publisher import RedisPublisher
 from django.conf import settings
 
 
@@ -236,19 +234,6 @@ class ProfileUpdateView(UpdateView):
 @login_required
 @csrf_exempt
 def userchat(request):
-
-    if request.method == 'POST':
-
-        data = request.POST
-        total_text = data['sender'] + '^' +\
-            data['date'] + '^' + data['text']
-
-        redis_publisher = RedisPublisher(facility='dialogs',
-                                         users=[data['receiver']])
-        message = RedisMessage(total_text)
-        redis_publisher.publish_message(message)
-        return HttpResponse('OK')
-
     return render(request,
                   'dialogs.html',
                   {'users': User.objects.all()})
