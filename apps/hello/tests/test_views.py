@@ -229,17 +229,40 @@ class ProfileEditViewTests(TestCase):
 class TestChatView(TestCase):
     """ chat view test case """
 
-    def setUp(self):
+    fixtures = ['test_data.json']
 
+    def setUp(self):
         self.client.login(username='admin', password='admin')
         self.url = reverse('hello:user_chat')
-        self.response = self.client.get(self.url)
 
     def test_chat_is_returned(self):
         """ test view returns the correct template """
 
+        self.response = self.client.get(self.url)
         self.assertEqual(self.response.status_code, 200)
         self.assertTemplateUsed(self.response, 'dialogs.html')
+        self.assertTrue('users' in self.response.context)
+
+    def test_chat_with_non_existant_threads(self):
+        """ test view when there are no threads """
+
+        self.response = self.client.get(self.url)
+        self.assertFalse('threads' in self.response.context)
+        self.assertTrue('There are no dialogs yet'
+                        in self.response.content)
+
+    def test_chat_with_threads(self):
+        """ test view when threads exists"""
+
+        thread = Thread()
+        thread.save()
+        thread.participants.add(1, 2)
+        self.assertEqual(Thread.objects.count(), 1)
+
+        self.response = self.client.get(self.url)
+        self.assertTrue('threads' in self.response.context)
+        self.assertEqual(self.response.context['threads'][0].participants,
+                         thread.participants)
 
     def test_ajax_post(self):
         """
