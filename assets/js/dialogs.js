@@ -1,38 +1,15 @@
+/*global $, _ */
+$(function() {
 
-var $billboard = $('#billboard'),
-    $message = $("#text_message"),
-    $initTitle = $('title').text();
+    var textarea = $('div#chat');
+    var input = $('input#input');
 
-var msgArray, 
-    chatFocused,
-    unread = 0;
+    var remove_spinner = function() {
+        if (textarea.hasClass('spinner'))
+            textarea.removeClass('spinner');
+    };
 
-var	dateOptions = {
-			month:  'short',
-			day:    'numeric',
-			year:   'numeric',
-			hour:   '2-digit',
-			minute: '2-digit',
-			second: '2-digit',
-		};
+    remove_spinner();
+    input.focus();
 
-
-function sendMessage() {
-}
-
-
-function receiveMessage(msg) { 
-} 
-
-
-window.onfocus = function() {
-  chatFocused = true;
-  $('title').text($initTitle);
-  unread = 0;
-};
-
-
-window.onblur = function() {
-  chatFocused = false;
-};
-
+});
