@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.test import TestCase
-from apps.hello.models import AboutMe, RequestContent
+from apps.hello.models import AboutMe, RequestContent, Thread
 from django.utils.encoding import smart_unicode
+from django.contrib.auth.models import User
 
 NORMAL = {
     "method": "GET",
@@ -58,6 +59,7 @@ class ThreadModelTest(TestCase):
         thread.participants.add(user1, user2)
         thread.lastid = 10
         thread.save()
+
         print(thread.participants.all())
 
         admin_display = '1 alex leon (last message ID: 10)'

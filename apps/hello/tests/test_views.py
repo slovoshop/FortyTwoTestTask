@@ -1,6 +1,6 @@
 from django.test import TestCase, Client, RequestFactory
 from django.core.urlresolvers import reverse
-from apps.hello.models import AboutMe, RequestContent
+from apps.hello.models import AboutMe, RequestContent, Thread
 import json
 from apps.hello.utils import GetTestImage, RemoveTestImages
 from apps.hello.forms import ProfileUpdateForm
@@ -258,6 +258,8 @@ class TestChatView(TestCase):
         thread.save()
         thread.participants.add(1, 2)
         self.assertEqual(Thread.objects.count(), 1)
+
+        print(thread.participants.all())
 
         self.response = self.client.get(self.url)
         self.assertTrue('threads' in self.response.context)

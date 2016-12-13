@@ -2,6 +2,7 @@
 
 from django.db import models
 from PIL import Image
+from django.contrib.auth.models import User
 
 
 class AboutMe(models.Model):
@@ -87,3 +88,18 @@ class ModelsChange(models.Model):
     model = models.CharField(max_length=10)
     datetime = models.DateTimeField(auto_now=True, auto_now_add=True)
     action = models.CharField(max_length=10)
+
+
+class Thread(models.Model):
+    ''' Thread Model	'''
+
+    participants = models.ManyToManyField(User)
+    lastid = models.IntegerField(default=1, blank=True, null=True)
+    stop = models.BooleanField(default=False)
+
+    def get_participants(self):
+        pk = str(self.pk) + " "
+        members = " ".join([u.username for u in self.participants.all()])
+        lastid = " (last message ID: " + str(self.lastid) + ")"
+        admin_display = pk + members + lastid
+        return admin_display
