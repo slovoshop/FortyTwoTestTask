@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import AboutMe, RequestContent
+from .models import AboutMe, RequestContent, Thread
 from django.views.generic import ListView, UpdateView
 from .forms import ProfileUpdateForm, RequestUpdateForm
 from django.http import HttpResponse, HttpResponseBadRequest, Http404
@@ -234,6 +234,22 @@ class ProfileUpdateView(UpdateView):
 @login_required
 @csrf_exempt
 def userchat(request):
+    threads = Thread.objects.filter(
+        participants=request.user
+    ).order_by("-lastid")
+
+    if not threads:
+        return render(request,
+                      'dialogs.html',
+                      {'users': User.objects.exclude(username=request.user)})
+
+    for thread in threads:
+        partner = thread.participants.exclude(id=request.user.id)
+        thread.partner = partner[0].username
+
     return render(request,
                   'dialogs.html',
-                  {'users': User.objects.all()})
+                  {
+                    'threads': threads,
+                    'users': User.objects.exclude(username=request.user)
+                  })

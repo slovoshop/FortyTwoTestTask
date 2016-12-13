@@ -229,8 +229,6 @@ class ProfileEditViewTests(TestCase):
 class TestChatView(TestCase):
     """ chat view test case """
 
-    fixtures = ['test_data.json']
-
     def setUp(self):
         self.client.login(username='admin', password='admin')
         self.url = reverse('hello:user_chat')
@@ -246,6 +244,7 @@ class TestChatView(TestCase):
     def test_chat_with_non_existant_threads(self):
         """ test view when there are no threads """
 
+        Thread.objects.all().delete()
         self.response = self.client.get(self.url)
         self.assertFalse('threads' in self.response.context)
         self.assertTrue('There are no dialogs yet'
@@ -254,17 +253,15 @@ class TestChatView(TestCase):
     def test_chat_with_threads(self):
         """ test view when threads exists"""
 
-        thread = Thread()
-        thread.save()
-        thread.participants.add(1, 2)
         self.assertEqual(Thread.objects.count(), 1)
-
-        print(thread.participants.all())
+        thread = Thread.objects.get(pk=1)
 
         self.response = self.client.get(self.url)
         self.assertTrue('threads' in self.response.context)
-        self.assertEqual(self.response.context['threads'][0].participants,
-                         thread.participants)
+        self.assertEqual(len(self.response.context['threads']), 1)
+
+        participants = self.response.context['threads'][0].get_participants
+        self.assertEqual(participants, thread.get_participants)
 
     def test_ajax_post(self):
         """

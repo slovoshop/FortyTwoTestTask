@@ -60,7 +60,5 @@ class ThreadModelTest(TestCase):
         thread.lastid = 10
         thread.save()
 
-        print(thread.participants.all())
-
-        admin_display = '1 alex leon (last message ID: 10)'
+        admin_display = str(thread.id) + ' alex leon (last message ID: 10)'
         self.assertEqual(thread.get_participants(), admin_display)

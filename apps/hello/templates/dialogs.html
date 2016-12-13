@@ -23,7 +23,14 @@
           <b>Dialogs</b><br>
 
           <div id="threads">
-            <p>There are no dialogs yet</p>
+          {% for thread in threads %}
+          <a class="thread-link" 
+          data-thread="{{ thread.id }}"
+          data-partner="{{ thread.partner }}"
+          data-lastid="{{ thread.lastid }}">{{ thread.partner }} ({{ thread.lastid }})</a><br>
+          {% empty %}
+          <p>There are no dialogs yet</p>
+          {% endfor %}
           </div>
 
           <p><b>Current Dialog with:</b></p>

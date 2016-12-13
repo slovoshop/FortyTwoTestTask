@@ -67,5 +67,14 @@
         "jabber": "alexleon@42cc.co", 
         "email": "k6_alexstr@ukr.net"
     }
+},
+{
+    "model": "hello.thread",
+    "pk": 1,
+    "fields": {
+        "lastid": 10,
+        "stop": false,
+        "participants": [1, 2]
+    }
 }
 ]
