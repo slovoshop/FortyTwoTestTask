@@ -263,18 +263,32 @@ class TestChatView(TestCase):
         participants = self.response.context['threads'][0].get_participants
         self.assertEqual(participants, thread.get_participants)
 
-    def test_ajax_post(self):
-        """
-        Test ajax post after sending new message
-        """
+    def test_send_normal(self):
+        """ test sending new message by ajax"""
 
-        response = self.client.post(reverse('hello:user_chat'),
-                                    data={'sender': 'Jaroslav',
-                                          'receiver': 'Andrey',
-                                          'date': 'Nov 26, 2016, 9:00:00 AM',
-                                          'text': 'There is news', },
-                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        resp = self.client.post(reverse('hello:send_chat'), {
+            'sender_id': 1,
+            'text': 'testmessage',
+            'mode': 'currentDialog',
+            'prev_thread_id': 0,
+            'recipient': 'admin'
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(Message.objects.count(), 1)
+        msg = Message.objects.last()
+        self.assertEqual(msg.text, 'testmessage')
+        self.assertIsNotNone(msg.timestamp)
 
-        self.assertEqual(response.reason_phrase, 'OK')
+    def test_send_invalid(self):
+        """ test sending empty message by ajax"""
+
+        resp = self.client.post(reverse('hello:send_chat'), {
+            'text': ''
+        })
+        jsonresp = json.loads(resp.content.decode())
+        self.assertTrue('text' in jsonresp)
+        self.assertEqual(len(jsonresp['text']), 1)
+        self.assertEqual(jsonresp['text'][0],
+                         'This field is required.')
 
         RemoveTestImages()
