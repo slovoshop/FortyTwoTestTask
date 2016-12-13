@@ -43,3 +43,22 @@ class RequestContentModelTest(TestCase):
                               date='July 18, 2016, 09:30 a.m.')
         self.assertEqual(smart_unicode(info),
                          u'шлях_запиту July 18, 2016, 09:30 a.m.')
+
+
+class ThreadModelTest(TestCase):
+    """Test Thread model"""
+
+    def test_get_participants(self):
+        """ test admin display for threads """
+        user1 = User.objects.create_user(username='alex')
+        user2 = User.objects.create_user(username='leon')
+
+        thread = Thread()
+        thread.save()
+        thread.participants.add(user1, user2)
+        thread.lastid = 10
+        thread.save()
+        print(thread.participants.all())
+
+        admin_display = '1 alex leon (last message ID: 10)'
+        self.assertEqual(thread.get_participants(), admin_display)
