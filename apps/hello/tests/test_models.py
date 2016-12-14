@@ -62,3 +62,18 @@ class ThreadModelTest(TestCase):
 
         admin_display = str(thread.id) + ' alex leon (last message ID: 10)'
         self.assertEqual(thread.get_participants(), admin_display)
+
+
+class MessageModelTest(TestCase):
+    """Test Message model"""
+
+    def test_unicode(self):
+        """ test that __unicode__ returns <id sender text> """
+
+        message = Message.objects.first()
+        message.text = 'Тест'
+        
+        admin_display = str(message.id) + ' ' +\
+                        message.sender.username +\
+                        ' ' + message.text
+        self.assertEqual(smart_unicode(message), admin_display)
