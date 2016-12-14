@@ -103,3 +103,15 @@ class Thread(models.Model):
         lastid = " (last message ID: " + str(self.lastid) + ")"
         admin_display = pk + members + lastid
         return admin_display
+
+
+class Message(models.Model):
+    ''' Message Model	'''
+
+    text = models.TextField(max_length=512)
+    sender = models.ForeignKey(User)
+    thread = models.ForeignKey(Thread)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __unicode__(self):
+        return u"%d %s %s" % (self.pk, self.sender, self.text)

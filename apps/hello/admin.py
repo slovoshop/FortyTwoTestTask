@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import AboutMe, RequestContent, ModelsChange
-from .models import Thread
+from .models import Thread, Message
 
 
 class AdminModelsChanges(admin.ModelAdmin):
@@ -15,3 +15,4 @@ admin.site.register(AboutMe)
 admin.site.register(RequestContent)
 admin.site.register(ModelsChange, AdminModelsChanges)
 admin.site.register(Thread, AdminThread)
+admin.site.register(Message)

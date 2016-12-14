@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.test import TestCase
-from apps.hello.models import AboutMe, RequestContent, Thread
+from apps.hello.models import AboutMe, RequestContent, Thread, Message
 from django.utils.encoding import smart_unicode
 from django.contrib.auth.models import User
 
