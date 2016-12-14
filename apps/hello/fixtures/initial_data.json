@@ -76,5 +76,15 @@
         "stop": false,
         "participants": [1, 2]
     }
+},
+{
+    "model": "hello.message",
+    "pk": 1,
+    "fields": {
+        "text": "Hi",
+        "sender": 1,
+        "thread": 1,
+        "timestamp": "2016-12-07T18:48:37.610Z"
+    }
 }
 ]

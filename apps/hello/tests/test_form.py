@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 from django.test import TestCase
-from apps.hello.forms import ProfileUpdateForm
-from apps.hello.models import AboutMe
+from apps.hello.forms import ProfileUpdateForm, MessageForm
+from apps.hello.models import AboutMe, Message
 from datetime import date
 from apps.hello.utils import GetTestImage
 
@@ -80,7 +81,7 @@ class ProfileUpdateFormTests(TestCase):
 
 
 class MessageFormTests(TestCase):
-        """ Test MessageForm """
+    """ Test MessageForm """
 
     def test_form_and_db_data_equal(self):
         """

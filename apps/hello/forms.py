@@ -1,6 +1,6 @@
 # -- coding: utf-8 --
 from django.forms import ModelForm
-from .models import AboutMe, RequestContent
+from .models import AboutMe, RequestContent, Message
 from django import forms
 from widgets import DatePickerWidget
 from datetime import date, datetime
@@ -53,3 +53,10 @@ class RequestUpdateForm(ModelForm):
             'status_code': forms.TextInput(attrs={'class': 'form_widget'}),
             'priority': forms.TextInput(attrs={'class': 'form_widget'}),
         }
+
+
+class MessageForm(forms.Form):
+    """ Used for validating the send ajax request. """
+
+    text = forms.CharField(
+        required=True, max_length=Message._meta.get_field('text').max_length)
