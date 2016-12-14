@@ -77,3 +77,41 @@ class ProfileUpdateFormTests(TestCase):
         image_resized = GetTestImage(profile.photo, 'PIL')
         self.assertLessEqual(image_resized.height, 200)
         self.assertLessEqual(image_resized.width, 200)
+
+
+class MessageFormTests(TestCase):
+        """ Test MessageForm """
+
+    def test_form_and_db_data_equal(self):
+        """
+        Check that form saves correct data
+        """
+
+        form = MessageForm({'text': u'Привет'})
+        self.assertTrue(form.is_valid())
+
+        message = Message.objects.first()
+        message.text = u'Привет'
+        message.save()
+
+        self.assertEqual(message.text, form.data['text'])
+
+    def test_blank_and_too_long_data(self):
+        """
+        Send empty data and too long data and check form
+        for required field and max_length
+        """
+        form = MessageForm({'text': ''})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors,
+                         {'text': [u'This field is required.']})
+
+        long_text = ''
+        for i in range(513):
+            long_text += '!'
+
+        form = MessageForm({'text': long_text})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors,
+                         {'text': [u'Ensure this value has at most ' +
+                                   u'512 characters (it has 513).']})
