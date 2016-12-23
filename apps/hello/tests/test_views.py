@@ -291,4 +291,21 @@ class TestChatView(TestCase):
         self.assertEqual(jsonresp['text'][0],
                          'This field is required.')
 
+    def test_find_threads_info_on_the_page(self):
+        self.assertEqual(Thread.objects.count(), 1)
+        response = self.client.get(self.url)
+        self.assertContains(response, 'Jaroslav (1)', 1, 200)
+
+        thread = Thread.objects.get(pk=1)
+
+        resp = self.client.post('/send/', {
+            'text': 'Test text',
+            'sender_id': 1,
+            'recipient': 'Jaroslav',
+            'mode': 'currentDialog'
+        })
+
+        response = self.client.get(self.url)
+        self.assertContains(response, 'Jaroslav (2)', 1, 200)
+
         RemoveTestImages()
