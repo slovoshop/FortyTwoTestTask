@@ -95,7 +95,6 @@ class Thread(models.Model):
 
     participants = models.ManyToManyField(User)
     lastid = models.IntegerField(default=1, blank=True, null=True)
-    stop = models.BooleanField(default=False)
 
     def get_participants(self):
         pk = str(self.pk) + " "

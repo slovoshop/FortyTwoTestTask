@@ -4,12 +4,69 @@ from optparse import make_option
 from django.conf import settings
 import os
 from south.models import MigrationHistory
-from apps.hello.models import RequestContent, AboutMe
+from apps.hello.models import RequestContent, AboutMe, Thread
 from urlparse import urlparse
 from PIL import Image
 from django.core.files.uploadedfile import SimpleUploadedFile
 import glob
 from django.db.models import get_app, get_models
+from django.contrib.auth.models import User
+
+
+def _scan_threads(threads, sender_id, init=False):
+    """
+    Prepares threads for the left-handed panel.
+    """
+    if init:
+        initLMID = {}
+        for thread in threads:
+            partner = thread.participants.exclude(id=sender_id)[0]
+            initLMID[partner.username] = thread.lastid
+        return initLMID
+
+    thread_list = []
+    for thread in threads:
+        partner = thread.participants.exclude(id=sender_id)[0]
+        thread_list.append({
+                'thread': thread.id,
+                'partner': partner.username,
+                'lastid': thread.lastid,
+        })
+
+    return {'threads': thread_list}
+
+
+def _check_initLMID(session, username):
+    """ To implement the test dialogue between different browser tabs,
+        you need to have initLMID dictionary
+        for each dialog's member under one session.
+
+        Also, this feature adds a new key to initLMID dict,
+        if a new thread has been created
+    """
+
+    initLMID = username + '_ILMID'
+
+    if initLMID not in session:
+        session[initLMID] = {}
+
+    authorized_user = User.objects.get(username=username)
+
+    # query the backend for threads with username
+    threads = Thread.objects.filter(
+        participants=authorized_user
+    ).order_by("-lastid")
+
+    # Create dict with Last Message ID for each thread
+    ILMID_dict = _scan_threads(threads,
+                               authorized_user.id,
+                               init=True)
+
+    # Check that session[initLMID] contains LMID for each thread
+    for key in ILMID_dict:
+        if key not in session[initLMID]:
+            session[initLMID][key] = ILMID_dict[key]
+    session.modified = True
 
 
 def FixBarista(command):

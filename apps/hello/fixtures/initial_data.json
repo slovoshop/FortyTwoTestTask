@@ -72,8 +72,7 @@
     "model": "hello.thread",
     "pk": 1,
     "fields": {
-        "lastid": 10,
-        "stop": false,
+        "lastid": 1,
         "participants": [1, 2]
     }
 },

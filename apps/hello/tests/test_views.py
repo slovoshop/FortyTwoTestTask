@@ -1,6 +1,6 @@
 from django.test import TestCase, Client, RequestFactory
 from django.core.urlresolvers import reverse
-from apps.hello.models import AboutMe, RequestContent, Thread
+from apps.hello.models import AboutMe, RequestContent, Thread, Message
 import json
 from apps.hello.utils import GetTestImage, RemoveTestImages
 from apps.hello.forms import ProfileUpdateForm
@@ -266,15 +266,14 @@ class TestChatView(TestCase):
     def test_send_normal(self):
         """ test sending new message by ajax"""
 
-        resp = self.client.post(reverse('hello:send_chat'), {
-            'sender_id': 1,
+        resp = self.client.post('/send/', {
             'text': 'testmessage',
-            'mode': 'currentDialog',
-            'prev_thread_id': 0,
-            'recipient': 'admin'
+            'sender_id': 1,
+            'recipient': 'Jaroslav',
+            'mode': 'currentDialog'
         })
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(Message.objects.count(), 1)
+        self.assertEqual(Message.objects.count(), 2)
         msg = Message.objects.last()
         self.assertEqual(msg.text, 'testmessage')
         self.assertIsNotNone(msg.timestamp)
@@ -292,13 +291,13 @@ class TestChatView(TestCase):
                          'This field is required.')
 
     def test_find_threads_info_on_the_page(self):
+        """ test find threads info on thr page """
+
         self.assertEqual(Thread.objects.count(), 1)
         response = self.client.get(self.url)
         self.assertContains(response, 'Jaroslav (1)', 1, 200)
 
-        thread = Thread.objects.get(pk=1)
-
-        resp = self.client.post('/send/', {
+        self.client.post('/send/', {
             'text': 'Test text',
             'sender_id': 1,
             'recipient': 'Jaroslav',
