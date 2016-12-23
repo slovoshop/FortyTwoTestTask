@@ -18,6 +18,42 @@
     }
 },
 {
+    "pk": 2, 
+    "model": "auth.user", 
+    "fields": {
+        "username": "Jaroslav", 
+        "first_name": "", 
+        "last_name": "", 
+        "is_active": true, 
+        "is_superuser": false, 
+        "is_staff": true, 
+        "last_login": "2016-11-25T07:42:34Z", 
+        "groups": [], 
+        "user_permissions": [], 
+        "password": "pbkdf2_sha256$12000$jMZtDqIKo3uj$bsuxu6vtD2S/iqxm2dRMDvyIM1B/91pD/FhIMVLOS2Q=", 
+        "email": "", 
+        "date_joined": "2016-11-25T07:42:34Z"
+    }
+},
+{
+    "pk": 3, 
+    "model": "auth.user", 
+    "fields": {
+        "username": "Andrey", 
+        "first_name": "", 
+        "last_name": "", 
+        "is_active": true, 
+        "is_superuser": false, 
+        "is_staff": true, 
+        "last_login": "2016-11-25T08:58:42.451Z", 
+        "groups": [], 
+        "user_permissions": [], 
+        "password": "pbkdf2_sha256$12000$LDTdT3deXufn$aWxJz5ipwcHv+9lCvkgifyJuIZS5MK0GwCKt0w0yo1c=", 
+        "email": "", 
+        "date_joined": "2016-11-25T08:58:42.451Z"
+    }
+},
+{
     "pk": 1, 
     "model": "hello.aboutme", 
     "fields": {
@@ -30,6 +66,25 @@
         "skype": "oleksiy.strutynskyy", 
         "jabber": "alexleon@42cc.co", 
         "email": "k6_alexstr@ukr.net"
+    }
+},
+{
+    "model": "hello.thread",
+    "pk": 1,
+    "fields": {
+        "lastid": 10,
+        "stop": false,
+        "participants": [1, 2]
+    }
+},
+{
+    "model": "hello.message",
+    "pk": 1,
+    "fields": {
+        "text": "Hi",
+        "sender": 1,
+        "thread": 1,
+        "timestamp": "2016-12-07T18:48:37.610Z"
     }
 }
 ]

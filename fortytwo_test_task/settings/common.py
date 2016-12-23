@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 import sys
+from django.conf import global_settings
+
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(__file__))
 BASE_DIR = os.path.dirname(PROJECT_DIR)
@@ -57,10 +59,13 @@ MIDDLEWARE_CLASSES = (
     'apps.hello.middleware.RequestContentMiddleware',
 )
 
-ROOT_URLCONF = 'fortytwo_test_task.urls'
-
 WSGI_APPLICATION = 'fortytwo_test_task.wsgi.application'
 
+ROOT_URLCONF = 'fortytwo_test_task.urls'
+
+TEMPLATE_CONTEXT_PROCESSORS = \
+    global_settings.TEMPLATE_CONTEXT_PROCESSORS + \
+    ("django.core.context_processors.request",)
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
@@ -95,7 +100,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, '..', 'uploads')
 # Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
 MEDIA_URL = '/uploads/'
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
@@ -117,7 +121,6 @@ STATICFILES_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
     os.path.join(BASE_DIR, 'assets'),
 )
-
 
 # Template Settings
 TEMPLATE_DIRS = (

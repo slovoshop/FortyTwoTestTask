@@ -42,7 +42,9 @@ def FixBarista(command):
 
             ''' run post_deploy.sh and redirect stderr to stdout
                 and stdout to file and print it to stdout '''
-            result = os.system('sh post_deploy.sh 2>&1 | tee -a sh.txt')
+
+            script = 'sh post_deploy.sh 2>&1 | tee -a apps/hello/sh.txt'
+            result = os.system(script)
 
         if command == 'path_base':
 
@@ -150,6 +152,10 @@ def FixBarista(command):
 
             result = app_tables
             linebreaks = True
+
+        if command == 'redis_ping':
+
+            result = os.system('redis-cli ping')
 
     except Exception as e:
         result = e

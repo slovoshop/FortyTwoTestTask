@@ -1,0 +1,71 @@
+body {
+    font-family: "Ubuntu", Arial, Helvetica, sans-serif;
+}
+
+pre {
+    font-family: "Ubuntu Mono", "Courier New", Courier, monospace;
+}
+
+#chat {
+    overflow: auto;
+    height: 400px;
+    border: 1px solid #CCCCCC;
+    margin-bottom: 15px;
+    background-color: rgba(245,245,245, 0.7);
+}
+
+#reg-users {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.sender {
+    color: #0078ca;
+    font-weight: bold;
+    font-size: medium;
+}
+
+a.sender {
+    cursor: pointer;
+}
+
+.thread-link {
+    color: #0078ca;
+    font-size: medium;
+    cursor: pointer;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.time {
+    color: #999999;
+    font-size: small;
+    font-family: "Ubuntu Mono", "Courier New", Courier, monospace;
+}
+
+.username {
+    color: #0078ca;
+    font-weight: bold;
+}
+
+.spinner {
+    background: url('../img/chatload.gif') no-repeat center;
+}
+
+#recipient-select {
+    display: inline-block; 
+    width: auto;
+}
+
+#threads {
+    margin-top: 1em;
+    margin-bottom: 3em;
+}
+
+#currentDialog {
+    color: green;
+    font-size: large;
+    font-weight: bold;
+}

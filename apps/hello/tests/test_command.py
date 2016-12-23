@@ -31,7 +31,7 @@ class CountObjectsTest(TestCase):
 
         self.assertIn('AboutMe: 1', result_out)
         self.assertIn('RequestContent: 10', result_out)
-        self.assertIn('User: 1', result_out)
+        self.assertIn('User: 3', result_out)
         self.assertIn('error: AboutMe: 1', result_err)
         self.assertIn('error: RequestContent: 10', result_err)
-        self.assertIn('error: User: 1', result_err)
+        self.assertIn('error: User: 3', result_err)

@@ -9,112 +9,103 @@
 
 {% block content %}
 
-   <div class="row" style="margin-top: 2em;">
-		 <div class="col-md-6">
+   <div class="row southspacing">
+		 <div class="col-md-5">
        <a class="btn btn-primary btn-xs" 
 		      href="{% url "hello:south" %}">
             south.html</a>
 
-       <br><br><br>
-
-       <a class="btn btn-primary btn-xs" 
+       <br><a class="btn btn-primary btn-xs spacing2em" 
 		      href="{% url "hello:south" %}?act=delete_ghost_migrations">
             python manage.py migrate apps.hello --delete-ghost-migrations</a>
-       <br><br>
-       <a class="btn btn-primary btn-xs" 
+
+       <br><a class="btn btn-primary btn-xs spacing1em" 
 		      href="{% url "hello:south" %}?act=0002_fake">
             python manage.py migrate apps.hello 0002 --fake</a>
-       <br><br>
-       <a class="btn btn-primary btn-xs" 
+
+       <br><a class="btn btn-primary btn-xs spacing1em" 
 		      href="{% url "hello:south" %}?act=goto_0002">
             python manage.py migrate apps.hello 0002</a>
-       <br><br>
-       <a class="btn btn-primary btn-xs" 
+
+       <br><a class="btn btn-primary btn-xs spacing1em" 
 		      href="{% url "hello:south" %}?act=list">
             python manage.py migrate --list</a>
-       <br><br>
-       <a class="btn btn-primary btn-xs" 
+
+       <br><a class="btn btn-primary btn-xs spacing1em" 
 		      href="{% url "hello:south" %}?act=table_already_exists">
             ./manage.py migrate myapp --fake</a><br>
-       <p>if you already have the app_tables created in the database,<br>
+
+       <p class="spacing1em">if you already have the app_tables created in the database,<br>
           you just need to run the initial migration as fake</p>
 
-       <br><br>
-
-       <a class="btn btn-primary btn-xs" 
+       <p class="spacing1em"><a class="btn btn-primary btn-xs" 
 		      href="{% url "hello:south" %}?act=app_db">
             show settinngs.DATABASES</a>
-       <br><br>
+
        <a class="btn btn-primary btn-xs" 
 		      href="{% url "hello:south" %}?act=set_app_db">
             set db name in settinngs</a>
+       </p>
 
-       <br><br><br>
-
-       <a class="btn btn-primary btn-xs" 
+       <p class="spacing1em"><a class="btn btn-primary btn-xs" 
 		      href="{% url "hello:south" %}?act=path_mig">
             show apps/hello/migrations path</a>
-       <br><br>
+
        <a class="btn btn-primary btn-xs" 
 		      href="{% url "hello:south" %}?act=path_app">
             show apps/hello path</a>
-       <br><br>
-       <a class="btn btn-primary btn-xs" 
+       </p>
+
+       <p class="spacing1em"><a class="btn btn-primary btn-xs" 
 		      href="{% url "hello:south" %}?act=path_prebase">
             show ../BASE_DIR</a>
-       <br><br>
+
        <a class="btn btn-primary btn-xs" 
 		      href="{% url "hello:south" %}?act=path_base">
             show BASE_DIR</a>
+       </p>
 
-       <br><br><br>
-
-       <a class="btn btn-primary btn-xs" 
+       <br><a class="btn btn-primary btn-xs spacing1em" 
 		      href="{% url "hello:south" %}?act=sh">
             run post_deploy.sh</a>
 
-       <br><br><br>
-
-       <a class="btn btn-primary btn-xs" 
+       <p class="spacing1em"><a class="btn btn-primary btn-xs" 
 		      href="{% url "hello:south" %}?act=history">
             show MigrationHistory</a>
-       <br><br>
+
        <a class="btn btn-primary btn-xs" 
 		      href="{% url "hello:south" %}?act=clear_history">
             clear MigrationHistory</a>
+       </p>
 
-       <br><br><br>
-
-       <a class="btn btn-primary btn-xs" 
+       <p class="spacing1em"><a class="btn btn-primary btn-xs" 
 		      href="{% url "hello:south" %}?act=rc_fields">
             show RequestContent fields</a>
-       <br><br>
+
        <a class="btn btn-primary btn-xs" 
 		      href="{% url "hello:south" %}?act=rc_clear">
             clear RequestContent table</a>
+       </p>
 
-
-       <br><br><br>
-
-       <a class="btn btn-primary btn-xs" 
+       <br><a class="btn btn-primary btn-xs spacing1em" 
 		      href="{% url "hello:south" %}?act=delete_apps_hello_tables">
             delete_apps_hello_tables</a>
-       <br><br>
-       <a class="btn btn-primary btn-xs" 
+
+       <p class="spacing1em"><a class="btn btn-primary btn-xs" 
 		      href="{% url "hello:south" %}?act=app_label">
             show app_label</a>
-       <br><br>
+
        <a class="btn btn-primary btn-xs" 
 		      href="{% url "hello:south" %}?act=app_tables">
             show app_tables</a>
+       </p>
 
-
-     <br><br><br><br><br><br><br><br>
-     <br><br><br><br><br><br><br><br>
-     <br><br><br><br><br><br><br><br>
+       <br><a class="btn btn-primary btn-xs spacing2em" 
+		      href="{% url "hello:south" %}?act=redis_ping">
+            Redis PING</a>
 		 </div>
 
-   <div class="row" style="margin-top: 2em;">
+   <div class="row spacing2em">
        RESULT: <br><br>
 
        {% if linebreaks %} 
@@ -123,12 +114,25 @@
           {% endfor %}
        {% else %} 
           {{ result }}
-       {% endif %}           
+       {% endif %}    
+
+       <br><input id="open" class="spacing2em" type="button" value="READ setup.txt from BASE_DIR" />
+       <textarea id="text" class="form_widget spacing1em" rows="20" cols="70">Install websockets</textarea>       
    </div>
 
 {% endblock content %}
 
 {% block extra_js %}
-<script src="{% static "js/formvalidator/jquery.form-validator.min.js" %}"></script>
+<script>
+$(document).ready(function() {
+
+  $("#open").click(function() {
+    $.post('/south/?act=read_txt').done(function(data) {
+      $("#text").text(data.fileContent);
+    });
+  });
+
+}); 
+</script>
 {% endblock extra_js %}
 

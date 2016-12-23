@@ -1,10 +1,11 @@
 from apps.hello.models import ModelsChange
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sessions.models import Session
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 
-IGNORE_MODELS = [ContentType, ModelsChange]
+IGNORE_MODELS = [ContentType, ModelsChange, Session]
 
 
 @receiver(post_save)
@@ -23,11 +24,7 @@ def model_save_handler(sender, created, **kwargs):
     if sender.__name__ == "RequestContent":
         info = ": " + log.path
 
-    if sender.__name__ == "Session":
-        info = ": " + log.session_key
-
     if sender.__name__ == "LogEntry":
-        log = kwargs['instance']
         info = ": in  " + log.content_type.__str__() +\
                " " + log.change_message
 

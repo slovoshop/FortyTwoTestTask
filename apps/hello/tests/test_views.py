@@ -1,6 +1,6 @@
 from django.test import TestCase, Client, RequestFactory
 from django.core.urlresolvers import reverse
-from apps.hello.models import AboutMe, RequestContent
+from apps.hello.models import AboutMe, RequestContent, Thread
 import json
 from apps.hello.utils import GetTestImage, RemoveTestImages
 from apps.hello.forms import ProfileUpdateForm
@@ -224,5 +224,71 @@ class ProfileEditViewTests(TestCase):
         for field in self.fields_list[:-2]:
             self.assertEqual(profile.serializable_value(field),
                              data[field])
+
+
+class TestChatView(TestCase):
+    """ chat view test case """
+
+    def setUp(self):
+        self.client.login(username='admin', password='admin')
+        self.url = reverse('hello:user_chat')
+
+    def test_chat_is_returned(self):
+        """ test view returns the correct template """
+
+        self.response = self.client.get(self.url)
+        self.assertEqual(self.response.status_code, 200)
+        self.assertTemplateUsed(self.response, 'dialogs.html')
+        self.assertTrue('users' in self.response.context)
+
+    def test_chat_with_non_existant_threads(self):
+        """ test view when there are no threads """
+
+        Thread.objects.all().delete()
+        self.response = self.client.get(self.url)
+        self.assertFalse('threads' in self.response.context)
+        self.assertTrue('There are no dialogs yet'
+                        in self.response.content)
+
+    def test_chat_with_threads(self):
+        """ test view when threads exists"""
+
+        self.assertEqual(Thread.objects.count(), 1)
+        thread = Thread.objects.get(pk=1)
+
+        self.response = self.client.get(self.url)
+        self.assertTrue('threads' in self.response.context)
+        self.assertEqual(len(self.response.context['threads']), 1)
+
+        participants = self.response.context['threads'][0].get_participants
+        self.assertEqual(participants, thread.get_participants)
+
+    def test_send_normal(self):
+        """ test sending new message by ajax"""
+
+        resp = self.client.post(reverse('hello:send_chat'), {
+            'sender_id': 1,
+            'text': 'testmessage',
+            'mode': 'currentDialog',
+            'prev_thread_id': 0,
+            'recipient': 'admin'
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(Message.objects.count(), 1)
+        msg = Message.objects.last()
+        self.assertEqual(msg.text, 'testmessage')
+        self.assertIsNotNone(msg.timestamp)
+
+    def test_send_invalid(self):
+        """ test sending empty message by ajax"""
+
+        resp = self.client.post(reverse('hello:send_chat'), {
+            'text': ''
+        })
+        jsonresp = json.loads(resp.content.decode())
+        self.assertTrue('text' in jsonresp)
+        self.assertEqual(len(jsonresp['text']), 1)
+        self.assertEqual(jsonresp['text'][0],
+                         'This field is required.')
 
         RemoveTestImages()

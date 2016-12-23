@@ -1,0 +1,63 @@
+
+Messenger installation
+===========================
+
+### Installation
+
+1. Create and activate your virtual environment (tested on Python 2.7)
+
+2. Install requirements: "make req".
+   Requirements.txt contains three packages for the correct messenger functioning:
+
+   - redis
+   - django-websocket-redis
+   - django-redis-sessions
+
+3. Run "redis-server"
+
+4. Check that Redis is up and accepts connections: 
+   run "redis-cli ping" and you must receive "PONG"
+
+5. Make sure that the project's settings contains the following options:
+
+   - WSGI_APPLICATION = 'ws4redis.django_runserver.application'
+   - WEBSOCKET_URL = '/ws/'
+   - WS4REDIS_EXPIRE = 3600
+   - WS4REDIS_HEARTBEAT = '--heartbeat--'
+   - WS4REDIS_PREFIX = 'ws'
+   - "ws4redis.context_processors.default" is in the TEMPLATE_CONTEXT_PROCESSORS
+
+6. To distinguish WebSockets from normals http-requests,
+   you must modify the Python starter module wsgi.py like this:
+
+				import os
+				import sys
+				from django.core.wsgi import get_wsgi_application
+				from django.conf import settings
+				from ws4redis.uwsgi_runserver import uWSGIWebsocketServer
+
+
+				sys.path.insert(0, os.path.abspath('..'))
+				os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fortytwo_test_task.settings")
+
+				_django_app = get_wsgi_application()
+				_websocket_app = uWSGIWebsocketServer()
+
+
+				def application(environ, start_response):
+						if environ.get('PATH_INFO').startswith(settings.WEBSOCKET_URL):
+								return _websocket_app(environ, start_response)
+						return _django_app(environ, start_response)
+
+7. Functions to interact with websockets are in the ws4redis.js. 
+   Check that the script is included in the template
+
+8. Websocket initialization is realized in the custom script by using constants 
+   from the context proccessor "ws4redis.context_processors.default". Important note:
+   it's necessary to place custom script in the template instead of a separate file.
+   Otherwise the context proccessor's constants will be undefined.
+
+9. Run project itself "make run"
+
+10. In a browser go to messenger page (site/userchat) and make sure that
+    a console displays websocket's status like "Connected!"

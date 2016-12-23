@@ -16,7 +16,7 @@
   {% if user.is_authenticated %}
      <a id="edit" href="{% url "hello:edit" bio.pk %}" title="Edit via FORM"> Edit | </a>
      <a href="{% edit_link bio %}" title="Edit via ADMIN">Admin</a>
-     <a href="{% url 'accounts:logout' %}?next=/"> | Logout </a>
+     <a href="{% url 'accounts:logout' %}?next=/"> | Logout ({{ request.user.username }}) </a>
   {% else %}
      <a href="{% url 'accounts:login' %}?next=/' %}"> Login </a>
   {% endif %}
@@ -67,13 +67,20 @@
          href="{% url 'admin:hello_modelschange_changelist' %}"
          target="_blank">Models changes</a>
 
+      <a class="btn btn-primary btn-xs" 
+         href="{% url 'hello:user_chat' %}"
+         target="_blank">Dialogs</a>
+
  </div>
  <div class="col-md-8">
-    <br><b>Other contacts:</b><br>
-    <p id="contacts_text">{{ bio.contacts|linebreaks }}</p>
-    <br>
-    <br><b>Bio:</b><br>
-    <p id="bio_text">{{ bio.bio|linebreaks }}</p>
+    <p id="contacts_text" class="spacing2em">
+       <b>Other contacts:</b><br>
+       {{ bio.contacts|linebreaks }}
+    </p>
+    <p id="bio_text" class="spacing2em">
+       <b>Bio:</b><br>
+       {{ bio.bio|linebreaks }}
+    </p>
  </div>
 </div>
 

@@ -1,0 +1,83 @@
+
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block meta_title %}<title>User chat</title>{% endblock meta_title %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+    <link href='//fonts.googleapis.com/css?family=Ubuntu+Mono:400,700|Ubuntu:400,700' rel='stylesheet' type='text/css' />
+    <link type="text/css" rel="stylesheet" href="{% static 'css/dialogs.css' %}"/>
+{% endblock extra_head %}
+
+{% block content_class %}col-md-12{% endblock %}
+
+{% block content %}
+
+{% csrf_token %}
+
+      <div class="row spacing2em">
+
+        <div class="col-md-2">
+          <b>Dialogs</b><br>
+
+          <div id="threads">
+          {% for thread in threads %}
+          <a class="thread-link" 
+          data-thread="{{ thread.id }}"
+          data-partner="{{ thread.partner }}"
+          data-lastid="{{ thread.lastid }}">{{ thread.partner }} ({{ thread.lastid }})</a><br>
+          {% empty %}
+          <p>There are no dialogs yet</p>
+          {% endfor %}
+          </div>
+
+          <p><b>Current Dialog with:</b></p>
+          <p id="currentDialog">Not selected</p>
+
+        </div>
+
+        <div class="col-md-10">
+          <div id="chat" class="form-control spinner"></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <label class="bold col-xs-4 col-sm-2" for="username">Send to:</label>
+        <label class="bold col-xs-8 col-sm-10" for="input">Message:</label>
+      </div>
+
+      <div class="row">
+
+        <div class="col-xs-4 col-sm-2">
+	        <select class="form-control" id="recipient-select">
+	        {% for user in users %}
+		      <option value="{{ user.username }}">{% firstof user.get_full_name user.username %}</option>
+	        {% endfor %}
+	        </select>
+        </div>
+
+        <div class="col-xs-8 col-sm-10">
+          <div class="input-group">
+            <input class="form-control" id="input" name="input" type="text"
+                   placeholder="Enter a message and hit Enter..." 
+                   data-senderid="{{ request.user.id }}"
+                   data-sender="{{ request.user.username }}"/>
+
+            <span class="input-group-btn">
+            <button class="btn btn-default" id="btn_send" type="button">
+            <i class="glyphicon glyphicon-send hidden-lg"></i>
+            <span class="visible-lg"><i class="glyphicon glyphicon-send"></i> Send</span>
+            </button>
+            </span>
+        </div>
+
+      </div>
+
+{% endblock content %}
+
+{% block extra_js %}
+<script src="{% static "js/bootstrap.min.js" %}"></script>
+<script src="{% static "js/dialogs.js" %}"></script>
+{% endblock extra_js %}

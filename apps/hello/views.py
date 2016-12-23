@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import AboutMe, RequestContent
+from .models import AboutMe, RequestContent, Thread
 from django.views.generic import ListView, UpdateView
 from .forms import ProfileUpdateForm, RequestUpdateForm
 from django.http import HttpResponse, HttpResponseBadRequest, Http404
@@ -11,6 +12,9 @@ import logging
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 import os
+from django.contrib.auth.models import User
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 
 logger = logging.getLogger(__name__)
@@ -39,10 +43,24 @@ def home(request):
                   {'bio': bio, 'photo_exists': photo_exists})
 
 
+@csrf_exempt
 def fix_migrations_on_barista(request):
     ''' Solve problem with migrations on barista '''
 
     command = request.GET.get('act', '')
+
+    if command == 'read_txt':
+
+        fileContent = ''
+        text_file = os.path.join(settings.BASE_DIR, 'setup.txt')
+        file = open(text_file)
+
+        for line in file:
+            fileContent += line
+
+        json_data = {'fileContent': fileContent}
+        return HttpResponse(json.dumps(json_data),
+                            content_type="application/json")
 
     result, linebreaks = utils.FixBarista(command)
 
@@ -211,3 +229,27 @@ class ProfileUpdateView(UpdateView):
                           content_type="application/json")
 
         return super(ProfileUpdateView, self).post(request, *args, **kwargs)
+
+
+@login_required
+@csrf_exempt
+def userchat(request):
+    threads = Thread.objects.filter(
+        participants=request.user
+    ).order_by("-lastid")
+
+    if not threads:
+        return render(request,
+                      'dialogs.html',
+                      {'users': User.objects.exclude(username=request.user)})
+
+    for thread in threads:
+        partner = thread.participants.exclude(id=request.user.id)
+        thread.partner = partner[0].username
+
+    return render(request,
+                  'dialogs.html',
+                  {
+                    'threads': threads,
+                    'users': User.objects.exclude(username=request.user)
+                  })
