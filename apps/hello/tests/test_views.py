@@ -229,6 +229,8 @@ class ProfileEditViewTests(TestCase):
 class TestChatView(TestCase):
     """ chat view test case """
 
+    fixtures = ['test_chat.json']
+
     def setUp(self):
         self.client.login(username='admin', password='admin')
         self.url = reverse('hello:user_chat')
@@ -295,6 +297,7 @@ class TestChatView(TestCase):
 
         self.assertEqual(Thread.objects.count(), 1)
         response = self.client.get(self.url)
+        self.assertContains(response, 'Andrey', 1, 200)
         self.assertContains(response, 'Jaroslav (1)', 1, 200)
 
         self.client.post('/send/', {
@@ -304,7 +307,63 @@ class TestChatView(TestCase):
             'mode': 'currentDialog'
         })
 
+        self.client.post('/send/', {
+            'text': 'Test text',
+            'sender_id': 1,
+            'recipient': 'Andrey',
+            'mode': 'changeDialog'
+        })
+
         response = self.client.get(self.url)
+        self.assertContains(response, 'Andrey (1)', 1, 200)
         self.assertContains(response, 'Jaroslav (2)', 1, 200)
+
+    @mock.patch('apps.hello.views.time')
+    def test_get_new__non_existant(self, time_patch):
+        resp = self.client.post('/get_new/', {
+            'thread_id': 1,
+            'username': 'admin',
+            'receiver': 'Jaroslav',
+            'lastid_buffer': 0
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content, b'OK')
+        self.assertEqual(resp['Content-Type'], 'text/plain')
+        self.assertTrue(time_patch.sleep.called)
+        self.assertEqual(time_patch.sleep.call_count, 20)
+
+    def test_get_new__new_message(self):
+        self.response = self.client.get(self.url)
+
+        # Select first thread
+        thread = Thread.objects.get(pk=1)
+
+        resp = self.client.post('/send/', {
+            'text': 'Test text',
+            'sender_id': 1,
+            'recipient': 'Jaroslav',
+            'mode': 'currentDialog'
+        })
+
+        msg = Message.objects.last()
+        self.assertEqual(msg.text, 'Test text')
+
+        resp = self.client.post('/get_new/', {
+            'thread_id': thread.id,
+            'username': 'admin',
+            'receiver': 'Jaroslav',
+            'lastid_buffer': 0
+        })
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp['Content-Type'], 'application/json')
+        jsonresp = json.loads(resp.content.decode())
+        self.assertEqual(jsonresp['lastid'], msg.pk)
+        self.assertEqual(len(jsonresp['messages']), 1)
+        self.assertEqual(jsonresp['messages'][0]['id'], msg.pk)
+        self.assertEqual(jsonresp['messages'][0]['username'],
+                         msg.sender.username)
+        self.assertEqual(jsonresp['messages'][0]['message'], msg.text)
+        self.assertTrue('timestamp' in jsonresp['messages'][0])
 
         RemoveTestImages()
