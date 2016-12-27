@@ -69,6 +69,29 @@ def _check_initLMID(session, username):
     session.modified = True
 
 
+def _prepear_new_messages(messages, lastid):
+    """
+    Converts the messages given, to a dictlist.
+    """
+    messages_dict = []
+
+    # Convert messages to a dict.
+    for message in messages:
+        messages_dict.append({
+            'id': message.pk,
+            'username': message.sender.username,
+            'message': message.text,
+            'timestamp': message.timestamp.isoformat(),
+        })
+
+    result = {
+        'messages': messages_dict,
+        'lastid': lastid
+    }
+
+    return result
+
+
 def FixBarista(command):
 
     result = 'no command'

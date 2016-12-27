@@ -16,9 +16,11 @@ from django.views.decorators.csrf import csrf_exempt
 import os
 from django.contrib.auth.models import User
 from django.conf import settings
+import time
 
 
 logger = logging.getLogger(__name__)
+SLEEP_SECONDS = 20
 
 
 def home(request):
@@ -302,16 +304,24 @@ def send(request):
         thread = Thread.objects.create()
         thread.participants.add(sender, recipient)
 
-    # Make the new message, and save it in the backend.
-    msg = Message()
-    msg.sender_id = sender_id
-    msg.thread_id = thread.id
-    msg.text = form.cleaned_data['text']
-    msg.save()
+    service_text = 'changeDialog to ' +\
+        sender.username + '-' + recipient.username
 
-    # Remember last message ID in the thread
-    thread.lastid = msg.id
-    thread.save()
+    """ When the user selects another thread in the left-hand list
+        then ajax-post contains service text
+        that doesn't need to save in the Message
+    """
+    if not request.POST['text'] == service_text:
+        # Save new message in the backend.
+        msg = Message()
+        msg.sender_id = sender_id
+        msg.thread_id = thread.id
+        msg.text = form.cleaned_data['text']
+        msg.save()
+
+        # Remember last message ID in the thread
+        thread.lastid = msg.id
+        thread.save()
 
     # If user don`t change dialog and just sends a message to the current one
     if mode == 'currentDialog':
@@ -327,3 +337,72 @@ def send(request):
 
     return HttpResponse(json.dumps(result),
                         content_type="application/json")
+
+
+@csrf_exempt
+@require_POST
+def get_new(request):
+    """
+    This method is called from the client when it wants to check if there are
+    any new messages since the last message "id".
+
+    The backend is checked every second for SLEEP_SECONDS. If there are no new
+    messages in this interval, "OK" is returned and the client may initiate a
+    new request.
+
+    The result of this method, when new messages are available is json similar
+    to below:
+
+    {
+        messages: [{...}, {...}, ...],
+        lastid: 100
+    }
+
+    "message" contains HTML that can be injected into a textarea.
+     "lastid" is the highest(latest) message ID in the thread.
+    """
+
+    thread_id = int(request.POST['thread_id'])
+    username = request.POST['username']
+    receiver = request.POST['receiver']
+
+    initLMID = username + '_ILMID'
+    utils._check_initLMID(request.session, username)
+
+    last_id = request.session[initLMID][receiver] if\
+        request.POST['lastid_buffer'] == '0' else\
+        int(request.POST['lastid_buffer'])
+
+    # Start long polling cycle
+    for _ in range(SLEEP_SECONDS):
+        # Get the thread corresponding to the dialog members
+        thread = Thread.objects.get(id=thread_id)
+
+        # If no new messages was found, sleep and try again.
+        if thread.lastid == last_id:
+            time.sleep(1)
+            continue
+
+        """ If new messages was found,
+            query the backend for messages since 'lastid' in session
+        """
+        messages = Message.objects.\
+            filter(thread=thread_id, pk__gt=last_id).order_by('pk')
+
+        message_count = messages.count()
+
+        # Never return more than 100 messages at once.
+        if message_count > 100:
+            messages = messages[message_count - 100:]
+
+        # Update LMID in the session
+        request.session[initLMID][receiver] = thread.lastid
+        request.session.modified = True
+
+        # Convert the QuerySet to a dictlist and return result
+        result = utils._prepear_new_messages(messages, thread.lastid)
+        return HttpResponse(json.dumps(result),
+                            content_type="application/json")
+
+    # if the SLEEP_SECONDS interval is ended without new messages
+    return HttpResponse('OK', content_type='text/plain')

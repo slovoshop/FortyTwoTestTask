@@ -4,6 +4,7 @@ from apps.hello.models import AboutMe, RequestContent, Thread, Message
 import json
 from apps.hello.utils import GetTestImage, RemoveTestImages
 from apps.hello.forms import ProfileUpdateForm
+import mock
 
 NORMAL = {
     'first_name': 'Alex',
@@ -320,6 +321,8 @@ class TestChatView(TestCase):
 
     @mock.patch('apps.hello.views.time')
     def test_get_new__non_existant(self, time_patch):
+        """ Test view get_new if there are no new messages """
+
         resp = self.client.post('/get_new/', {
             'thread_id': 1,
             'username': 'admin',
@@ -333,6 +336,8 @@ class TestChatView(TestCase):
         self.assertEqual(time_patch.sleep.call_count, 20)
 
     def test_get_new__new_message(self):
+        """ Test view get_new if there are new messages """
+
         self.response = self.client.get(self.url)
 
         # Select first thread
