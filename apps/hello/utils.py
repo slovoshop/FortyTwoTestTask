@@ -4,13 +4,27 @@ from optparse import make_option
 from django.conf import settings
 import os
 from south.models import MigrationHistory
-from apps.hello.models import RequestContent, AboutMe, Thread
+from apps.hello.models import RequestContent, AboutMe, Thread, Message
 from urlparse import urlparse
 from PIL import Image
 from django.core.files.uploadedfile import SimpleUploadedFile
 import glob
 from django.db.models import get_app, get_models
 from django.contrib.auth.models import User
+
+
+def _get_unread(threads, initLMID, user_id):
+    """ Custom function """
+
+    new_unread = {}
+
+    for thread in threads:
+        partner = thread.participants.exclude(id=user_id)[0]
+        messages = Message.objects.\
+            filter(thread=thread.id, pk__gt=initLMID[partner.username])
+        new_unread[partner.username] = messages.count()
+
+    return new_unread
 
 
 def _scan_threads(threads, sender_id, init=False):

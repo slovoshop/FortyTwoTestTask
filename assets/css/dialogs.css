@@ -54,6 +54,10 @@ a.sender {
     background: url('../img/chatload.gif') no-repeat center;
 }
 
+.spinner1 {
+    background: url('../img/loader.gif') no-repeat center;
+}
+
 #recipient-select {
     display: inline-block; 
     width: auto;
@@ -62,6 +66,7 @@ a.sender {
 #threads {
     margin-top: 2em;
     margin-bottom: 2em;
+    display:none;
 }
 
 #currentDialog {

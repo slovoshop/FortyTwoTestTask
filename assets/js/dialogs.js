@@ -3,15 +3,18 @@ $(function() {
     "use strict";
 
     var textarea = $('div#chat'), // place for messages
+        dialogsList = $('#threads'),
         input = $('input#input'), // input here new message
         btn_send = $('button[id=btn_send]'), // button to send message
         currentThread = $('#currentDialog'), // from the left-handed panel
         in_unload = false, // stop functions during page unloading
         selectedPartner,
         lastid_buffer, 
-        scan_messages_marker; // used to check if another thread is selected
+        scan_messages_marker, // used to check if another thread is selected
+        scan_threads_marker; // used to check if another thread is selected
 
-    //var now = moment();    // used for date_to_string function
+    // Dict with unread messages like {'partner1': unread1, 'partner2': unread2}
+    var unread = {};
 
     // Сurrent interlocutor for communication
     var currentPartner = input.data('sender');
@@ -24,6 +27,12 @@ $(function() {
 
     /* Contains the current number of failed requests (for get_new_messages) in a row. */
     var failed_requests_in_a_row = 0;
+
+    /* remove parentheses () from the left-handed dialogs list */
+    $('a.thread-link').html(function(i, html) {
+        return html.replace(/\(\)/, '');
+    });
+    dialogsList.show();
 
     // make sure AJAX-requests send the CSRF cookie, or the requests will be rejected.
     var csrftoken = $('input[type=hidden][name=csrfmiddlewaretoken]').val();
@@ -42,8 +51,8 @@ $(function() {
 
     // hide loader image
     var remove_spinner = function() {
-        if (textarea.hasClass('spinner'))
-            textarea.removeClass('spinner');
+        textarea.removeClass('spinner');
+        dialogsList.removeClass('spinner1');
     };
 
     remove_spinner();
@@ -61,7 +70,11 @@ $(function() {
         if (selectedPartner !== currentPartner) {
             changeDialog = true;
             mode = 'changeDialog';
-            lastid_buffer = 0;
+            lastid_buffer = -1;
+            $('a.thread-link').hide();
+            dialogsList.addClass('spinner1');
+            textarea.html('');
+            textarea.addClass('spinner');
         }
 
         $.post('/send/', {
@@ -107,19 +120,31 @@ $(function() {
             return false;
         }
         if (event.which === 38) { // press &(ampersand) to test something
-            //var temp = JSON.stringify(temp);
-            var temp = $('#service').data('init_lmid');
-            console.log(temp);
+            var lastChatLine = textarea.find('pre').last().text();
+            console.log(lastChatLine);
+            //if(lastChatLine.indexOf('try') === -1) 
+            //    add_error("Reached the max number of failed requests in a row.<br />" +
+            //    "Click <a href=\"javascript:$.retry_get_new_messages();\">Here</a> to try again!");
         }
 
         return true;
     });
 
 
-    // Display error after bad request
+    /* Display error after bad request */
     var add_error = function(data) {
         if (in_unload)
             return;
+
+        if (failed_requests_in_a_row > 3) {
+            var lastChatLine = textarea.find('pre').last().text();
+
+            if(lastChatLine.indexOf('try again') === -1)
+                data = "Reached the max number of failed requests in a row.<br />" +
+                "Click <a href=\"javascript:$.retry_get_new_messages();\">Here</a> to try again!";
+            else return;
+        }
+
         var line = '<span class="error"><span class="bold">Error</span>:<br /><pre>' +
             data + '</pre></span>';
         textarea.append(line);
@@ -127,12 +152,10 @@ $(function() {
     };
 
 
-    // Correct HTML after dialog changing
+    /* Correct HTML after dialog changing */
     var switch_to_another_chat = function(data) {
         if (in_unload)
             return;
-
-        textarea.html('');
 
         // This happens when the user sends an incorrect message after page loading
         if(data.hasOwnProperty('text')) {
@@ -150,11 +173,9 @@ $(function() {
         });
 
         currentPartner = selectedPartner;
-        changeDialog = false;
 
         // Start long polling with new thread
         scan_messages_marker = setTimeout(get_new_messages, 500);
-        //setTimeout(scan_threads_info, 500);
         input.focus();
     };
 
@@ -171,11 +192,7 @@ $(function() {
         //var receiver = currentPartner;
         var stored_scan_messages_marker = scan_messages_marker;
 
-        if (failed_requests_in_a_row >= 3) {
-            add_error("Reached the max number of failed requests in a row.<br />" +
-                      "Click <a href=\"javascript:$.retry_get_new_messages();\">Here</a> to try again!");
-            return;
-        }
+        if (failed_requests_in_a_row > 3) return;
 
         $.post('/get_new/', 
         {
@@ -186,18 +203,28 @@ $(function() {
  
         }, function(result) { 
 
-           if (scan_messages_marker != stored_scan_messages_marker) return;
+            if (scan_messages_marker != stored_scan_messages_marker) return;
 
-           failed_requests_in_a_row = 0;
+            if (failed_requests_in_a_row > 3) return;
+            else failed_requests_in_a_row = 0;
 
-            if (result === 'OK') return;
+            /* if a new dialog has been started */
+            if (lastid_buffer === -1) {
+                scan_threads_marker = setTimeout(scan_threads_info, 500);
+
+                if (result === 'No new messages') {
+                    lastid_buffer = 0;
+                    return;
+                }
+            }
+
+            if (result === 'Long polling cycle is ended') return;
             
-            /* if the dialog has new messages */     
+            /* if the dialog has new messages, then we have json-data */     
             lastid_buffer = result.lastid;    
 
             /* Try to parse and interpret the resulting json. */
             try {
-                //add_senders(result.senders);
                 add_messages(result.messages);
                 remove_spinner();
             } catch (e) {
@@ -206,10 +233,10 @@ $(function() {
 
         }).fail(function(data) {
 
-           if (scan_messages_marker != stored_scan_messages_marker) return;
-
             /* A fail has happened, increment the counter. */
             failed_requests_in_a_row += 1;
+
+            if (scan_messages_marker != stored_scan_messages_marker) return;
 
             /* Format the error string into something readable, instead of [Object object]. */
             var failed_string = data.status + ": " + data.statusText;
@@ -269,13 +296,16 @@ $(function() {
      */
     $.retry_get_new_messages = function() {
         failed_requests_in_a_row = 0;
-        setTimeout(get_new_messages, 2000);
+        scan_messages_marker = setTimeout(get_new_messages, 500);
+        scan_threads_marker = setTimeout(scan_threads_info, 500);
     };
 
 
     $(document).on('click', 'a.thread-link', function() {
 
         var newPartner = $(this).data('partner');
+        if (newPartner == currentPartner) return false;
+
         var serviceText = 'changeDialog to ' + input.data('sender') + '-' + newPartner;
         $('#recipient-select').val(newPartner);
         input.val(serviceText);
@@ -283,5 +313,85 @@ $(function() {
 
         return false;
     });
+
+
+    /* Define the number of unread messages in other threads */
+    var scan_threads_info = function() {
+
+        if (failed_requests_in_a_row > 3) return;
+
+        // Remember the receiver until the function is executed 
+        //var receiver = currentPartner;
+        var stored_scan_threads_marker = scan_threads_marker;
+
+        if (changeDialog) unread[selectedPartner] = 0;
+        console.log(selectedPartner);
+        console.log(unread);
+
+        $.post('/scan_threads/', 
+        {
+            'user_id': input.data('senderid'),
+            'thread_id': currentThread.data('thread'),
+            'unread_dict': JSON.stringify(unread),
+            'changeDialog': changeDialog
+
+        }, function(data) { 
+
+            if (scan_threads_marker != stored_scan_threads_marker) return;
+
+            if (failed_requests_in_a_row > 3) return;
+            else failed_requests_in_a_row = 0;
+
+            if (data === 'OK') return;
+
+            if (changeDialog) {
+                textarea.removeClass('spinner');
+                dialogsList.removeClass('spinner1');
+                changeDialog = false;
+            }
+
+            _.each(data.threads, function(thread) {
+                unread[thread.partner] = thread.unread;
+            });
+
+            /* Render left-handed dialogs list */
+            var rendered_threads = _.template(
+                '<% _.each(threads, function(thread) { %>' +
+                    '<a class="thread-link" ' +
+                    'data-thread="<%= thread.thread %>" ' +
+                    'data-partner="<%= thread.partner %>" ' + 
+                    'data-lastid="<%= thread.lastid %>"> ' + 
+                    '<%= thread.partner %> (<%= thread.unread %>)</a><br><% }); %>')({
+                threads: data.threads
+            });
+
+            /* remove parentheses with zero inside */
+            rendered_threads = rendered_threads.replace(/\(0\)/g, '');
+
+            $('div#threads').html(rendered_threads);
+
+            $('a.thread-link[data-partner=' +selectedPartner+ ']').addClass('bold');
+
+        }).fail(function(data) {
+
+            /* A fail has happened, increment the counter. */
+            failed_requests_in_a_row += 1;
+
+            if (scan_threads_marker != stored_scan_threads_marker) return;
+
+            /* Format the error string into something readable, instead of [Object object]. */
+            var failed_string = data.status + ": " + data.statusText;
+            add_error(failed_string);
+
+            /* Seems to happen on hibernate, the request will restart. */
+            if (data.status === 0) return;
+
+        }).always(function() {
+
+           if (scan_threads_marker == stored_scan_threads_marker)
+               scan_threads_marker = setTimeout(scan_threads_info, 500);
+        });
+    };
+
 
 });

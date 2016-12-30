@@ -365,13 +365,13 @@ def get_new(request):
     thread_id = int(request.POST['thread_id'])
     username = request.POST['username']
     receiver = request.POST['receiver']
+    lastid_buffer = int(request.POST['lastid_buffer'])
 
     initLMID = username + '_ILMID'
     utils._check_initLMID(request.session, username)
 
     last_id = request.session[initLMID][receiver] if\
-        request.POST['lastid_buffer'] == '0' else\
-        int(request.POST['lastid_buffer'])
+    lastid_buffer in [-1, 0] else lastid_buffer
 
     # Start long polling cycle
     for _ in range(SLEEP_SECONDS):
@@ -380,6 +380,10 @@ def get_new(request):
 
         # If no new messages was found, sleep and try again.
         if thread.lastid == last_id:
+            # Initial request after dialog changing
+            if lastid_buffer == -1:
+                return HttpResponse('No new messages',
+                                    content_type='text/plain')
             time.sleep(1)
             continue
 
@@ -396,8 +400,12 @@ def get_new(request):
             messages = messages[message_count - 100:]
 
         # Update LMID in the session
+        settings.SESSION_SAVE_EVERY_REQUEST = True
         request.session[initLMID][receiver] = thread.lastid
         request.session.modified = True
+
+        if username == 'admin':
+            print('get_new NEW MESSAGES: ' + initLMID + '[' + receiver + '] = ' + str(request.session[initLMID][receiver]))
 
         # Convert the QuerySet to a dictlist and return result
         result = utils._prepear_new_messages(messages, thread.lastid)
@@ -405,4 +413,102 @@ def get_new(request):
                             content_type="application/json")
 
     # if the SLEEP_SECONDS interval is ended without new messages
+    if username == 'admin':
+        print('get_new NO NEW: ' + initLMID + '[Andrey] = ' + str(request.session[initLMID]['Andrey']))
+
+    settings.SESSION_SAVE_EVERY_REQUEST = False
+    return HttpResponse('Long polling cycle is ended',
+                        content_type='text/plain')
+
+
+@csrf_exempt
+@require_POST
+def scan_threads(request):
+
+    # long polling interval(LPI) for threads scanning
+    # to convert in seconds you have to multiply THREADS_LPI х 5    
+    THREADS_LPI = 4
+
+    user_id = int(request.POST['user_id'])
+    thread_id = int(request.POST['thread_id'])
+    unread_dict = json.loads(request.POST['unread_dict'])
+
+    logged_user = User.objects.get(id=user_id)
+    initLMID = logged_user.username + '_ILMID'
+    utils._check_initLMID(request.session, logged_user.username)
+
+    # This block is for testing
+    current_thread = Thread.objects.get(id=thread_id)
+    current_partner = current_thread.participants.exclude(id=user_id)[0]
+    if logged_user.username == 'admin':
+        print(logged_user.username + '-' + current_partner.username + ' >> scan_threads >> unread_dict')
+        for key in request.session[initLMID]:
+            if key not in unread_dict:
+                unread_dict[key] = 0
+            if key == 'Andrey':
+                andrey_thread = Thread.objects.get(id=4) # thread admin-Andrey has ID=4
+                print('unread_dict[' + key + '] = ' + str(unread_dict[key]))
+                print('andrey_thread.lastid = ' + str(andrey_thread.lastid))
+                print('request.session[' + initLMID + '][' + key + '] = ' + str(request.session[initLMID][key]))
+    # End tetsing block
+
+    for _ in range(THREADS_LPI):
+        # Query the backend for threads with current user.
+        threads = Thread.objects.filter(participants=user_id).\
+                         order_by("-lastid")
+
+        """ If the user changes current thread or
+            new thread appears, then collect information
+        """
+        if request.POST['changeDialog'] == 'true' or\
+        threads.count() > len(request.session[initLMID]):
+
+            result = utils._scan_threads(threads, user_id)
+            new_unread = utils._get_unread(threads, request.session[initLMID], user_id)
+
+            if logged_user.username == 'admin':
+                print(logged_user.username + '-' + current_partner.username + ' >> scan_threads >> new_unread')
+                for key in new_unread:
+                    if key == 'Andrey':
+                        print(key + ': ' + str(new_unread[key]))
+
+            for dialog in result['threads']:
+                dialog['unread'] = new_unread[dialog['partner']]
+
+            return HttpResponse(json.dumps(result),
+                                content_type="application/json")
+
+        # if any of the threads have new messages, than collect information
+        for thread in threads:
+            if thread.id == thread_id:
+                continue
+
+            partner = thread.participants.exclude(id=user_id)[0]
+
+            """if logged_user.username == 'admin':
+                print(logged_user.username + '-' + current_partner.username + ' >>>> THREADS_LPI')
+                print('thread.lastid: ' + str(thread.lastid) + '  ' + initLMID + '[' + partner.username + '] = ' + str(request.session[initLMID][partner.username]))"""
+
+            if thread.lastid != request.session[initLMID][partner.username]:
+                new_unread = utils._get_unread(threads, request.session[initLMID], user_id)
+
+                if new_unread[partner.username] > unread_dict[partner.username]:
+                    result = utils._scan_threads(threads, user_id)
+
+                    if logged_user.username == 'admin':
+                        print(logged_user.username + '-' + current_partner.username + ' >>>> THREADS_LPI: new_unread for ' + partner.username + ' >unread')
+
+                    for dialog in result['threads']:
+                        dialog['unread'] = new_unread[dialog['partner']]
+                        if logged_user.username == 'admin':
+                            print('new_unread[' + dialog['partner'] + '] = ' + str(new_unread[dialog['partner']]))
+
+                    return HttpResponse(json.dumps(result),
+                                        content_type="application/json")
+
+        # If no messages was found, sleep and try again.
+        time.sleep(5)
+        continue
+
+    # If there are no new messages during THREADS_LPI, "OK" is returned
     return HttpResponse('OK', content_type='text/plain')

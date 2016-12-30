@@ -25,12 +25,12 @@
         <div class="col-md-2">
           <p class="bold">All Dialogs</p>
 
-          <div id="threads">
+          <div id="threads" class="spinner1">
             {% for thread in threads %}
               <a class="thread-link" 
               data-thread="{{ thread.id }}"
               data-partner="{{ thread.partner }}"
-              data-lastid="{{ thread.lastid }}">{{ thread.partner }} ({{ thread.lastid }})</a><br>
+              data-lastid="{{ thread.lastid }}">{{ thread.partner }} ({{ thread.unread }})</a><br>
             {% empty %}
               <p>There are no dialogs yet</p>
             {% endfor %}
