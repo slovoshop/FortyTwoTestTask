@@ -67,7 +67,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 WSGI_APPLICATION = 'fortytwo_test_task.wsgi.application'
-SESSION_ENGINE = "django.contrib.sessions.backends.cached_db" 
+# SESSION_ENGINE = "django.contrib.sessions.backends.cached_db" 
 ROOT_URLCONF = 'fortytwo_test_task.urls'
 
 TEMPLATE_CONTEXT_PROCESSORS = \

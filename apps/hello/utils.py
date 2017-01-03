@@ -80,6 +80,7 @@ def _check_initLMID(session, username):
     for key in ILMID_dict:
         if key not in session[initLMID]:
             session[initLMID][key] = ILMID_dict[key]
+    #session.save()
     session.modified = True
 
 

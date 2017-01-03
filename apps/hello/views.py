@@ -17,6 +17,7 @@ import os
 from django.contrib.auth.models import User
 from django.conf import settings
 import time
+import pdb
 
 
 logger = logging.getLogger(__name__)
@@ -243,6 +244,10 @@ def userchat(request):
     initLMID = request.user.username + '_ILMID'
     if initLMID not in request.session:
         request.session[initLMID] = {}
+    request.session.modified = True
+    request.session.save()
+
+    print(request.session.__dict__)
 
     if not threads:
         return render(request,
@@ -292,7 +297,14 @@ def send(request):
     sender = User.objects.get(id=sender_id)
     recipient = User.objects.get(username=request.POST['recipient'])
 
+    """if sender.username == 'admin':
+        print('sender-' + sender.username + ' >> send started >> session[admin_ILMID] = ' + str(request.session['admin_ILMID']))"""
+
     utils._check_initLMID(request.session, sender.username)
+
+    if sender.username == 'admin':
+        initLMID = sender.username + '_ILMID'
+        print('\n admin >> view send >>> after _check_initLMID >> request.session[admin_ILMID] = ' + str(request.session['admin_ILMID']))
 
     # Get the thread corresponding to the dialog members
     thread_queryset = Thread.objects.filter(participants=recipient).\
@@ -370,6 +382,10 @@ def get_new(request):
     initLMID = username + '_ILMID'
     utils._check_initLMID(request.session, username)
 
+    if username == 'admin':
+        print('admin-' + receiver + ' >> get_new started >> session[admin_ILMID] = ' + str(request.session[initLMID]))
+        #pdb.set_trace()
+
     last_id = request.session[initLMID][receiver] if\
     lastid_buffer in [-1, 0] else lastid_buffer
 
@@ -400,12 +416,13 @@ def get_new(request):
             messages = messages[message_count - 100:]
 
         # Update LMID in the session
-        settings.SESSION_SAVE_EVERY_REQUEST = True
+        # settings.SESSION_SAVE_EVERY_REQUEST = True
         request.session[initLMID][receiver] = thread.lastid
+        request.session.save()
         request.session.modified = True
 
         if username == 'admin':
-            print('get_new NEW MESSAGES: ' + initLMID + '[' + receiver + '] = ' + str(request.session[initLMID][receiver]))
+            print('admin >> get_new NEW MESSAGES: ' + initLMID + '[' + receiver + '] = ' + str(request.session[initLMID][receiver]))
 
         # Convert the QuerySet to a dictlist and return result
         result = utils._prepear_new_messages(messages, thread.lastid)
@@ -416,7 +433,7 @@ def get_new(request):
     if username == 'admin':
         print('get_new NO NEW: ' + initLMID + '[Andrey] = ' + str(request.session[initLMID]['Andrey']))
 
-    settings.SESSION_SAVE_EVERY_REQUEST = False
+    #settings.SESSION_SAVE_EVERY_REQUEST = False
     return HttpResponse('Long polling cycle is ended',
                         content_type='text/plain')
 
@@ -441,15 +458,15 @@ def scan_threads(request):
     current_thread = Thread.objects.get(id=thread_id)
     current_partner = current_thread.participants.exclude(id=user_id)[0]
     if logged_user.username == 'admin':
-        print(logged_user.username + '-' + current_partner.username + ' >> scan_threads >> unread_dict')
+        print(logged_user.username + '-' + current_partner.username + ' >> scan_threads started')
         for key in request.session[initLMID]:
             if key not in unread_dict:
                 unread_dict[key] = 0
-            if key == 'Andrey':
-                andrey_thread = Thread.objects.get(id=4) # thread admin-Andrey has ID=4
-                print('unread_dict[' + key + '] = ' + str(unread_dict[key]))
-                print('andrey_thread.lastid = ' + str(andrey_thread.lastid))
-                print('request.session[' + initLMID + '][' + key + '] = ' + str(request.session[initLMID][key]))
+
+        andrey_thread = Thread.objects.get(id=4) # thread admin-Andrey has ID=4
+        print('unread_dict[Andrey] = ' + str(unread_dict['Andrey']))
+        print('andrey_thread.lastid = ' + str(andrey_thread.lastid))
+        print('request.session[admin_ILMID] = ' + str(request.session[initLMID]))
     # End tetsing block
 
     for _ in range(THREADS_LPI):
