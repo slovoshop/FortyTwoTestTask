@@ -18,10 +18,11 @@ from django.contrib.auth.models import User
 from django.conf import settings
 import time
 import pdb
+from django.views.decorators.cache import cache_control, never_cache
+import datetime
 
 
 logger = logging.getLogger(__name__)
-SLEEP_SECONDS = 20
 
 
 def home(request):
@@ -241,13 +242,16 @@ def userchat(request):
         participants=request.user
     ).order_by("-lastid")
 
+    # print(request.session.__dict__)
+
     initLMID = request.user.username + '_ILMID'
     if initLMID not in request.session:
         request.session[initLMID] = {}
     request.session.modified = True
     request.session.save()
 
-    print(request.session.__dict__)
+    if not request.COOKIES.get(initLMID):
+        request.COOKIES[initLMID] = '{}'
 
     if not threads:
         return render(request,
@@ -261,21 +265,33 @@ def userchat(request):
             request.session[initLMID][key] = ILMID_dict[key]
     request.session.modified = True
 
+    """temp = json.loads(request.COOKIES[initLMID])
+    for key in ILMID_dict:
+        if key not in temp:
+            temp[key] = ILMID_dict[key]
+    request.COOKIES[initLMID] = json.dumps(temp)
+
+    print(request.COOKIES)"""
+
     for thread in threads:
         partner = thread.participants.exclude(id=request.user.id)
         thread.partner = partner[0].username
 
-    return render(request,
+    resp = render(request,
                   'dialogs.html',
                   {
                     'threads': threads,
                     'users': User.objects.exclude(username=request.user),
                     'initLMID': json.dumps(ILMID_dict)
                   })
+    #resp.set_cookie('admin_temp', {'temp': 1})
+    #resp.set_cookie(initLMID, temp)
+    return resp
 
 
 @csrf_exempt
 @require_POST
+@never_cache
 def send(request):
     """
     This view is called when the client wants to send a message.
@@ -285,6 +301,11 @@ def send(request):
     """
     # Parse and validate text.
     form = MessageForm(request.POST)
+
+    """admin_temp = json.loads(request.COOKIES['admin_temp'])
+    admin_temp['temp'] += 1
+    request.COOKIES['admin_temp'] = json.dumps(admin_temp)
+    print('>> SEND >> request.COOKIES[admin_temp] = ' + request.COOKIES['admin_temp'])"""
 
     if not form.is_valid():
         return HttpResponse(json.dumps(form.errors),
@@ -300,11 +321,14 @@ def send(request):
     """if sender.username == 'admin':
         print('sender-' + sender.username + ' >> send started >> session[admin_ILMID] = ' + str(request.session['admin_ILMID']))"""
 
-    utils._check_initLMID(request.session, sender.username)
+    initLMID = sender.username + '_ILMID'
+    #print(request.COOKIES)
+    request.COOKIES[initLMID] = utils._check_initLMID(request.session, sender.username, request.COOKIES)
 
     if sender.username == 'admin':
         initLMID = sender.username + '_ILMID'
-        print('\n admin >> view send >>> after _check_initLMID >> request.session[admin_ILMID] = ' + str(request.session['admin_ILMID']))
+        nowtime = datetime.datetime.now().strftime('%H:%M:%S')
+        print('\n' + nowtime + ' admin >> view send >>> after _check_initLMID >> request.session[admin_ILMID] = ' + str(request.session['admin_ILMID']))
 
     # Get the thread corresponding to the dialog members
     thread_queryset = Thread.objects.filter(participants=recipient).\
@@ -374,19 +398,24 @@ def get_new(request):
      "lastid" is the highest(latest) message ID in the thread.
     """
 
+    SLEEP_SECONDS = 20
+
     thread_id = int(request.POST['thread_id'])
     username = request.POST['username']
     receiver = request.POST['receiver']
     lastid_buffer = int(request.POST['lastid_buffer'])
 
     initLMID = username + '_ILMID'
-    utils._check_initLMID(request.session, username)
+    session_initLMID = request.session.get(initLMID)
 
-    if username == 'admin':
-        print('admin-' + receiver + ' >> get_new started >> session[admin_ILMID] = ' + str(request.session[initLMID]))
-        #pdb.set_trace()
+    request.COOKIES[initLMID] = utils._check_initLMID(request.session, username, request.COOKIES)
 
-    last_id = request.session[initLMID][receiver] if\
+    """if username == 'admin':
+        nowtime = datetime.datetime.now().strftime('%H:%M:%S')
+        print(nowtime + ' admin-' + receiver + ' >> get_new started >> session[admin_ILMID] = ' + str(request.session._session_cache[initLMID]))
+        #pdb.set_trace()"""
+
+    last_id = session_initLMID[receiver] if\
     lastid_buffer in [-1, 0] else lastid_buffer
 
     # Start long polling cycle
@@ -398,8 +427,10 @@ def get_new(request):
         if thread.lastid == last_id:
             # Initial request after dialog changing
             if lastid_buffer == -1:
-                return HttpResponse('No new messages',
-                                    content_type='text/plain')
+                response = HttpResponse('No new messages',
+                                        content_type='text/plain')
+                response['debugtext'] = username + '-' + receiver + ': No new messages'
+                return response
             time.sleep(1)
             continue
 
@@ -415,31 +446,43 @@ def get_new(request):
         if message_count > 100:
             messages = messages[message_count - 100:]
 
+
+        session_initLMID[receiver] = thread.lastid
+        #request.session.pop('admin_lastid') try this also
+        request.session[initLMID] = session_initLMID
         # Update LMID in the session
-        # settings.SESSION_SAVE_EVERY_REQUEST = True
-        request.session[initLMID][receiver] = thread.lastid
+        #request.session[initLMID][receiver] = thread.lastid
+        #request.COOKIES[initLMID] = request.session[initLMID]
+        #temp = request.session[initLMID]
+        #request.session.update(temp)
         request.session.save()
         request.session.modified = True
 
         if username == 'admin':
-            print('admin >> get_new NEW MESSAGES: ' + initLMID + '[' + receiver + '] = ' + str(request.session[initLMID][receiver]))
+            nowtime = datetime.datetime.now().strftime('%H:%M:%S')
+            print(nowtime + ' admin >> get_new NEW MESSAGES: ' + initLMID + '[' + receiver + '] = ' + str(request.session[initLMID][receiver]))
 
         # Convert the QuerySet to a dictlist and return result
         result = utils._prepear_new_messages(messages, thread.lastid)
-        return HttpResponse(json.dumps(result),
-                            content_type="application/json")
+        response = HttpResponse(json.dumps(result),
+                                content_type="application/json")
+        response['debugtext'] = username + '-' + receiver + ': New messages in JSON'
+        return response
 
     # if the SLEEP_SECONDS interval is ended without new messages
-    if username == 'admin':
-        print('get_new NO NEW: ' + initLMID + '[Andrey] = ' + str(request.session[initLMID]['Andrey']))
+    """if username == 'admin':
+        nowtime = datetime.datetime.now().strftime('%H:%M:%S')
+        print(nowtime + ' get_new NO NEW: admin_ILMID = ' + str(request.session[initLMID]))"""
 
-    #settings.SESSION_SAVE_EVERY_REQUEST = False
-    return HttpResponse('Long polling cycle is ended',
-                        content_type='text/plain')
+    response = HttpResponse('Long polling cycle is ended',
+                            content_type='text/plain')
+    response['debugtext'] = username + '-' + receiver + ': Long polling cycle is ended'
+    return response
 
 
 @csrf_exempt
 @require_POST
+@never_cache
 def scan_threads(request):
 
     # long polling interval(LPI) for threads scanning
@@ -452,22 +495,23 @@ def scan_threads(request):
 
     logged_user = User.objects.get(id=user_id)
     initLMID = logged_user.username + '_ILMID'
-    utils._check_initLMID(request.session, logged_user.username)
+    request.COOKIES[initLMID] = utils._check_initLMID(request.session, logged_user.username, request.COOKIES)
 
-    # This block is for testing
+    """# This block is for testing
     current_thread = Thread.objects.get(id=thread_id)
     current_partner = current_thread.participants.exclude(id=user_id)[0]
     if logged_user.username == 'admin':
-        print(logged_user.username + '-' + current_partner.username + ' >> scan_threads started')
+        nowtime = datetime.datetime.now().strftime('%H:%M:%S')
+        print(nowtime + ' ' + logged_user.username + '-' + current_partner.username + ' >> scan_threads started')
         for key in request.session[initLMID]:
             if key not in unread_dict:
                 unread_dict[key] = 0
 
         andrey_thread = Thread.objects.get(id=4) # thread admin-Andrey has ID=4
-        print('unread_dict[Andrey] = ' + str(unread_dict['Andrey']))
-        print('andrey_thread.lastid = ' + str(andrey_thread.lastid))
-        print('request.session[admin_ILMID] = ' + str(request.session[initLMID]))
-    # End tetsing block
+        print(nowtime + ' unread_dict[Andrey] = ' + str(unread_dict['Andrey']))
+        print(nowtime + ' andrey_thread.lastid = ' + str(andrey_thread.lastid))
+        print(nowtime + ' request.session[admin_ILMID] = ' + str(request.session[initLMID]))
+    # End tetsing block"""
 
     for _ in range(THREADS_LPI):
         # Query the backend for threads with current user.
@@ -483,11 +527,12 @@ def scan_threads(request):
             result = utils._scan_threads(threads, user_id)
             new_unread = utils._get_unread(threads, request.session[initLMID], user_id)
 
-            if logged_user.username == 'admin':
-                print(logged_user.username + '-' + current_partner.username + ' >> scan_threads >> new_unread')
+            """if logged_user.username == 'admin':
+                nowtime = datetime.datetime.now().strftime('%H:%M:%S')
+                print(nowtime + ' ' + logged_user.username + '-' + current_partner.username + ' >> scan_threads >> new_unread')
                 for key in new_unread:
                     if key == 'Andrey':
-                        print(key + ': ' + str(new_unread[key]))
+                        print(nowtime + ' ' + key + ': ' + str(new_unread[key]))"""
 
             for dialog in result['threads']:
                 dialog['unread'] = new_unread[dialog['partner']]
@@ -512,13 +557,15 @@ def scan_threads(request):
                 if new_unread[partner.username] > unread_dict[partner.username]:
                     result = utils._scan_threads(threads, user_id)
 
-                    if logged_user.username == 'admin':
-                        print(logged_user.username + '-' + current_partner.username + ' >>>> THREADS_LPI: new_unread for ' + partner.username + ' >unread')
+                    """if logged_user.username == 'admin':
+                        nowtime = datetime.datetime.now().strftime('%H:%M:%S')
+                        print(nowtime + ' ' + logged_user.username + '-' + current_partner.username + ' >>>> THREADS_LPI: new_unread for ' + partner.username + ' >unread')"""
 
                     for dialog in result['threads']:
                         dialog['unread'] = new_unread[dialog['partner']]
-                        if logged_user.username == 'admin':
-                            print('new_unread[' + dialog['partner'] + '] = ' + str(new_unread[dialog['partner']]))
+                        """if logged_user.username == 'admin':
+                            nowtime = datetime.datetime.now().strftime('%H:%M:%S')
+                            print(nowtime + ' new_unread[' + dialog['partner'] + '] = ' + str(new_unread[dialog['partner']]))"""
 
                     return HttpResponse(json.dumps(result),
                                         content_type="application/json")

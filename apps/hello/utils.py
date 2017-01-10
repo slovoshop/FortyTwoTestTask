@@ -11,6 +11,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 import glob
 from django.db.models import get_app, get_models
 from django.contrib.auth.models import User
+import json
 
 
 def _get_unread(threads, initLMID, user_id):
@@ -50,7 +51,7 @@ def _scan_threads(threads, sender_id, init=False):
     return {'threads': thread_list}
 
 
-def _check_initLMID(session, username):
+def _check_initLMID(session, username, cookies):
     """ To implement the test dialogue between different browser tabs,
         you need to have initLMID dictionary
         for each dialog's member under one session.
@@ -77,11 +78,20 @@ def _check_initLMID(session, username):
                                init=True)
 
     # Check that session[initLMID] contains LMID for each thread
+    session_initLMID = session.get(initLMID)
     for key in ILMID_dict:
-        if key not in session[initLMID]:
-            session[initLMID][key] = ILMID_dict[key]
-    #session.save()
+        if key not in session_initLMID:
+            session_initLMID[key] = ILMID_dict[key]
+    session[initLMID] = session_initLMID
+    session.save()
     session.modified = True
+
+    """temp = json.loads(cookies)
+    for key in ILMID_dict:
+        if key not in temp:
+            temp[key] = ILMID_dict[key]"""
+
+    return 'temp'
 
 
 def _prepear_new_messages(messages, lastid):

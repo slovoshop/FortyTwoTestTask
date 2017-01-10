@@ -120,11 +120,14 @@ $(function() {
             return false;
         }
         if (event.which === 38) { // press &(ampersand) to test something
-            var lastChatLine = textarea.find('pre').last().text();
-            console.log(lastChatLine);
-            //if(lastChatLine.indexOf('try') === -1) 
-            //    add_error("Reached the max number of failed requests in a row.<br />" +
-            //    "Click <a href=\"javascript:$.retry_get_new_messages();\">Here</a> to try again!");
+            $.post('/send/', {
+                'text': 'test',
+                'sender_id': 3,
+                'recipient': 'admin',
+                'mode': 'currentDialog'
+            }, function(data, status, xhr) {
+                console.log('test message from Andrey to admin was sent');
+            });
         }
 
         return true;
@@ -325,8 +328,8 @@ $(function() {
         var stored_scan_threads_marker = scan_threads_marker;
 
         if (changeDialog) unread[selectedPartner] = 0;
-        console.log(selectedPartner);
-        console.log(unread);
+        //console.log(selectedPartner);
+        //console.log(unread);
 
         $.post('/scan_threads/', 
         {
