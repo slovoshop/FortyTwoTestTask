@@ -12,14 +12,7 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 import sys
 from django.conf import global_settings
-import SocketServer
-from wsgiref import handlers
 
-
-# Monkeypatch python not to print "Broken Pipe" errors to stdout.
-# the 'Broken Pipe' is a normal browser quirk - just ignore it.
-SocketServer.BaseServer.handle_error = lambda *args, **kwargs: None
-handlers.BaseHandler.log_exception = lambda *args, **kwargs: None
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(__file__))
 BASE_DIR = os.path.dirname(PROJECT_DIR)
