@@ -1,16 +1,21 @@
 
+"""
 from django.core.management import call_command
 from optparse import make_option
-from django.conf import settings
-import os
 from south.models import MigrationHistory
-from apps.hello.models import RequestContent, AboutMe, Thread, Message
+from apps.hello.models import RequestContent, AboutMe
+from django.db.models import get_app, get_models
+import pdb
+"""
+
+from django.conf import settings
+from apps.hello.models import Thread, Message
+from django.contrib.auth.models import User
 from urlparse import urlparse
 from PIL import Image
 from django.core.files.uploadedfile import SimpleUploadedFile
+import os
 import glob
-from django.db.models import get_app, get_models
-from django.contrib.auth.models import User
 import json
 
 
@@ -45,13 +50,12 @@ def _scan_threads(threads, sender_id, init=False):
         thread_list.append({
                 'thread': thread.id,
                 'partner': partner.username,
-                'lastid': thread.lastid,
         })
 
     return {'threads': thread_list}
 
 
-def _check_initLMID(session, username, cookies):
+def _check_initLMID(session, username):
     """ To implement the test dialogue between different browser tabs,
         you need to have initLMID dictionary
         for each dialog's member under one session.
@@ -86,35 +90,47 @@ def _check_initLMID(session, username, cookies):
     session.save()
     session.modified = True
 
-    """temp = json.loads(cookies)
-    for key in ILMID_dict:
-        if key not in temp:
-            temp[key] = ILMID_dict[key]"""
 
-    return 'temp'
-
-
-def _prepear_new_messages(messages, lastid):
+def _prepear_new_messages(current_thread, lastid_buffer):
     """
     Converts the messages given, to a dictlist.
     """
-    messages_dict = []
+    scan_status = ''
 
-    # Convert messages to a dict.
+    if lastid_buffer == 0:
+        scan_status = 'Last messages after dialog changing'
+        messages = Message.objects.\
+            filter(thread=current_thread).\
+            order_by('pk')
+    else:
+        scan_status = 'Current dialog contains new messages'
+        messages = Message.objects.\
+            filter(thread=current_thread, pk__gt=lastid_buffer).\
+            order_by('pk')
+
+    # Never return more than 20 messages at once.
+    message_count = messages.count()
+    if message_count > 20:
+        messages = messages[message_count - 20:]
+
+    messages_list = []
+
+    # Convert messages to a dictlist.
     for message in messages:
-        messages_dict.append({
+        messages_list.append({
             'id': message.pk,
             'username': message.sender.username,
             'message': message.text,
             'timestamp': message.timestamp.isoformat(),
         })
 
-    result = {
-        'messages': messages_dict,
-        'lastid': lastid
+    result_dict = {
+        'messages': messages_list,
+        'lastid': current_thread.lastid,
+        'scan_status': scan_status
     }
 
-    return result
+    return json.dumps(result_dict)
 
 
 def FixBarista(command):
@@ -122,6 +138,7 @@ def FixBarista(command):
     result = 'no command'
     linebreaks = ''
 
+    """
     try:
 
         if command == 'rc_fields':
@@ -264,7 +281,7 @@ def FixBarista(command):
 
     except Exception as e:
         result = e
-
+    """
     return result, linebreaks
 
 

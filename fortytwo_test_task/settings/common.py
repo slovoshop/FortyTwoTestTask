@@ -67,7 +67,6 @@ MIDDLEWARE_CLASSES = (
 )
 
 WSGI_APPLICATION = 'fortytwo_test_task.wsgi.application'
-# SESSION_ENGINE = "django.contrib.sessions.backends.cached_db" 
 ROOT_URLCONF = 'fortytwo_test_task.urls'
 
 TEMPLATE_CONTEXT_PROCESSORS = \
@@ -83,6 +82,8 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'test8db.sqlite3'),
     }
 }
+
+''' SESSION_ENGINE = "django.contrib.sessions.backends.cached_db" '''
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/

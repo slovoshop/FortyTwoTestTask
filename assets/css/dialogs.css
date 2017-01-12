@@ -58,6 +58,12 @@ a.sender {
     background: url('../img/loader.gif') no-repeat center;
 }
 
+.empty {
+    color: green;
+    font-size: large;
+    font-weight: bold;
+}
+
 #recipient-select {
     display: inline-block; 
     width: auto;
@@ -67,10 +73,4 @@ a.sender {
     margin-top: 2em;
     margin-bottom: 2em;
     display:none;
-}
-
-#currentDialog {
-    color: green;
-    font-size: large;
-    font-weight: bold;
 }

@@ -29,15 +29,14 @@
             {% for thread in threads %}
               <a class="thread-link" 
               data-thread="{{ thread.id }}"
-              data-partner="{{ thread.partner }}"
-              data-lastid="{{ thread.lastid }}">{{ thread.partner }} ({{ thread.unread }})</a><br>
+              data-partner="{{ thread.partner }}">{{ thread.partner }} ({{ thread.unread }})</a><br>
             {% empty %}
-              <p>There are no dialogs yet</p>
+              <p id="no_threads" class="empty">There are no dialogs yet</p>
             {% endfor %}
           </div>
 
-          <p><b>Current Dialog with:</b></p>
-          <p id="currentDialog" data-thread="0">Not selected</p>
+          <p><b>Current Dialog:</b></p>
+          <p id="currentDialog" class="empty">Not selected</p>
 
         </div>
 

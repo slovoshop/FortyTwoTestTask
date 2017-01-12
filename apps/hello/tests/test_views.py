@@ -293,13 +293,23 @@ class TestChatView(TestCase):
         self.assertEqual(jsonresp['text'][0],
                          'This field is required.')
 
-    def test_find_threads_info_on_the_page(self):
+    def test_update_threads_info_on_the_page(self):
         """ test find threads info on thr page """
 
         self.assertEqual(Thread.objects.count(), 1)
-        response = self.client.get(self.url)
-        self.assertContains(response, 'Andrey', 1, 200)
-        self.assertContains(response, 'Jaroslav (1)', 1, 200)
+        self.client.get(self.url)
+
+        resp = self.client.post('/get_new/', {
+            'thread_id': 1,
+            'username': 'admin',
+            'receiver': 'Jaroslav',
+            'lastid_buffer': -1,
+            'unread_dict': '{"Jaroslav":0}'
+        })
+
+        jsonresp = json.loads(resp.content.decode())
+        self.assertEqual(jsonresp['threads'][0]['partner'], 'Jaroslav')
+        self.assertEqual(jsonresp['threads'][0]['unread'], 0)
 
         self.client.post('/send/', {
             'text': 'Test text',
@@ -308,40 +318,62 @@ class TestChatView(TestCase):
             'mode': 'currentDialog'
         })
 
-        self.client.post('/send/', {
-            'text': 'Test text',
-            'sender_id': 1,
-            'recipient': 'Andrey',
-            'mode': 'changeDialog'
+        resp = self.client.post('/get_new/', {
+            'thread_id': 1,
+            'username': 'admin',
+            'receiver': 'Jaroslav',
+            'lastid_buffer': -1,
+            'unread_dict': '{"Jaroslav":0}'
         })
 
-        response = self.client.get(self.url)
-        self.assertContains(response, 'Andrey (1)', 1, 200)
-        self.assertContains(response, 'Jaroslav (2)', 1, 200)
+        jsonresp = json.loads(resp.content.decode())
+        self.assertEqual(jsonresp['threads'][0]['partner'], 'Jaroslav')
+        self.assertEqual(jsonresp['threads'][0]['unread'], 1)
 
     @mock.patch('apps.hello.views.time')
     def test_get_new__non_existant(self, time_patch):
         """ Test view get_new if there are no new messages """
 
+        lastid = Thread.objects.get(pk=1).lastid
+
         resp = self.client.post('/get_new/', {
             'thread_id': 1,
             'username': 'admin',
             'receiver': 'Jaroslav',
-            'lastid_buffer': 0
+            'lastid_buffer': lastid,
+            'unread_dict': '{"Jaroslav":0}'
         })
+
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.content, b'OK')
-        self.assertEqual(resp['Content-Type'], 'text/plain')
+        self.assertEqual(resp['Content-Type'], 'application/json')
+
         self.assertTrue(time_patch.sleep.called)
         self.assertEqual(time_patch.sleep.call_count, 20)
+
+        jsonresp = json.loads(resp.content.decode())
+
+        self.assertEqual(jsonresp['scan_status'],
+                         'LP-cycle is ended without new messages')
 
     def test_get_new__new_message(self):
         """ Test view get_new if there are new messages """
 
         self.response = self.client.get(self.url)
 
-        # Select first thread
-        thread = Thread.objects.get(pk=1)
+        lastid = Thread.objects.get(pk=1).lastid
+
+        print('start long polling without new messages')
+        resp = self.client.post('/get_new/', {
+            'thread_id': 1,
+            'username': 'admin',
+            'receiver': 'Jaroslav',
+            'lastid_buffer': lastid,
+            'unread_dict': '{"Jaroslav":0}'
+        })
+
+        jsonresp = json.loads(resp.content.decode())
+        self.assertEqual(jsonresp['scan_status'],
+                         'LP-cycle is ended without new messages')
 
         resp = self.client.post('/send/', {
             'text': 'Test text',
@@ -353,16 +385,21 @@ class TestChatView(TestCase):
         msg = Message.objects.last()
         self.assertEqual(msg.text, 'Test text')
 
+        self.assertEqual(Thread.objects.get(pk=1).lastid, lastid + 1)
+
+        print('\n start long polling with new messages')
         resp = self.client.post('/get_new/', {
-            'thread_id': thread.id,
+            'thread_id': 1,
             'username': 'admin',
             'receiver': 'Jaroslav',
-            'lastid_buffer': 0
+            'lastid_buffer': lastid,
+            'unread_dict': '{"Jaroslav":0}'
         })
 
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp['Content-Type'], 'application/json')
         jsonresp = json.loads(resp.content.decode())
+        self.assertEqual(jsonresp['scan_status'],
+                         'Current dialog contains new messages')
+
         self.assertEqual(jsonresp['lastid'], msg.pk)
         self.assertEqual(len(jsonresp['messages']), 1)
         self.assertEqual(jsonresp['messages'][0]['id'], msg.pk)
