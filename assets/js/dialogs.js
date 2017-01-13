@@ -2,15 +2,18 @@
 $(function() {
     "use strict";
 
-    var textarea = $('div#chat'), // place for messages
-        dialogsList = $('#threads'),
+    var initTitle = $('title').text(),
+        textarea = $('div#chat'), // place for messages
+        dialogsList = $('#threads'), //left-handed threads list
         input = $('input#input'), // input here new message
         btn_send = $('button[id=btn_send]'), // button to send message
         in_unload = false, // stop functions during page unloading
         selectedPartner,
         serviceText, // used to change dialog by clicking partner link
         lastid_buffer, 
-        scan_messages_marker; // used to check if another thread is selected
+        scan_messages_marker, // used to check if another thread is selected
+        chatFocused,
+        totalUnread;
 
     // Dict with unread messages like {'partner1': unread1, 'partner2': unread2}
     var unread = {};
@@ -184,7 +187,7 @@ $(function() {
         currentPartner = selectedPartner;
 
         // Start long polling with new thread
-        scan_messages_marker = setTimeout(get_new_messages, 500);
+        scan_messages_marker = setTimeout(get_new_messages, 200);
         input.focus();
     };
 
@@ -271,7 +274,7 @@ $(function() {
         }).always(function() {
 
            if (scan_messages_marker == stored_scan_messages_marker)
-               scan_messages_marker = setTimeout(get_new_messages, 500);
+               scan_messages_marker = setTimeout(get_new_messages, 200);
         });
     };
 
@@ -279,9 +282,15 @@ $(function() {
     // Renders updated left-handed menu with dialogs list
     var update_threads_menu = function(threads) {
 
+            totalUnread = 0;
+
             _.each(threads, function(thread) {
                 unread[thread.partner] = thread.unread;
+                totalUnread += thread.unread;
             });
+
+            if (!chatFocused && totalUnread !== 0)
+                $('title').text('new (' +totalUnread+ ')');
 
             if (lastid_buffer === -1) {
                 unread[selectedPartner] = 0;
@@ -344,6 +353,11 @@ $(function() {
         });
         textarea.append(rendered_messages);
         textarea.scrollTop(textarea[0].scrollHeight);
+
+        if (!chatFocused) {
+            totalUnread += messages.length;
+            $('title').text('new (' +totalUnread+ ')');
+        }
     };
 
 
@@ -356,5 +370,23 @@ $(function() {
         currentPartner = 'empty';
         $('a.thread-link[data-partner=' +copyName+ ']').click();
     };
+
+
+window.onfocus = function() {
+    chatFocused = true;
+    $('title').text(initTitle);
+
+    /* Remove from totalUnread new messages corresponding to current thread */
+    totalUnread = 0;
+    $.each(unread, function(index, value) { 
+        totalUnread += unread[index];
+    });
+};
+
+
+window.onblur = function() {
+    chatFocused = false;
+};
+
 
 });
