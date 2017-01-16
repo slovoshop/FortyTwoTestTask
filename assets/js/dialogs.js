@@ -65,9 +65,10 @@ $(function() {
 
         event.preventDefault();
         btn_send.addClass('disabled');
+        textarea.addClass('spinner');
 
         selectedPartner = $('#recipient-select').val();
-       
+
         if (selectedPartner !== currentPartner) {
             mode = 'changeDialog';
             lastid_buffer = -1;
@@ -77,7 +78,6 @@ $(function() {
             else dialogsList.addClass('spinner1');
 
             textarea.html('');
-            textarea.addClass('spinner');
         }
 
         $.post('/send/', {
@@ -111,7 +111,8 @@ $(function() {
 
         }).always(function() {
             btn_send.removeClass('disabled');
-            mode = 'currentDialog';
+            if (mode == 'currentDialog') textarea.removeClass('spinner');
+            else mode = 'currentDialog';
             input.val('');
             input.focus();
 
@@ -151,6 +152,8 @@ $(function() {
 
     /* Change dialog by clicking partner link */
     $(document).on('click', 'a.thread-link', function() {
+
+        if (btn_send.hasClass('disabled')) return false;
 
         var newPartner = $(this).data('partner');
 
