@@ -73,13 +73,12 @@
     "pk": 1,
     "fields": {
         "lastid": 10,
-        "stop": false,
         "participants": [1, 2]
     }
 },
 {
     "model": "hello.message",
-    "pk": 1,
+    "pk": 10,
     "fields": {
         "text": "Hi",
         "sender": 1,

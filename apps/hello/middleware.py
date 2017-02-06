@@ -2,7 +2,6 @@ from .models import RequestContent
 
 
 class RequestContentMiddleware(object):
-
     def process_response(self, request, response):
         '''  Log request info in DB '''
         if request.path == "/request/" and request.is_ajax():
@@ -14,4 +13,5 @@ class RequestContentMiddleware(object):
           status_code=response.status_code,
         )
         request_log.save()
+
         return response

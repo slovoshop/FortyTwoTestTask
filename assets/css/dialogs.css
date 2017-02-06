@@ -54,18 +54,23 @@ a.sender {
     background: url('../img/chatload.gif') no-repeat center;
 }
 
+.spinner1 {
+    background: url('../img/loader.gif') no-repeat center;
+}
+
+.empty {
+    color: green;
+    font-size: large;
+    font-weight: bold;
+}
+
 #recipient-select {
     display: inline-block; 
     width: auto;
 }
 
 #threads {
-    margin-top: 1em;
-    margin-bottom: 3em;
-}
-
-#currentDialog {
-    color: green;
-    font-size: large;
-    font-weight: bold;
+    margin-top: 2em;
+    margin-bottom: 2em;
+    display:none;
 }

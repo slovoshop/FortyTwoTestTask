@@ -1,22 +1,144 @@
 
+"""
 from django.core.management import call_command
 from optparse import make_option
-from django.conf import settings
-import os
 from south.models import MigrationHistory
 from apps.hello.models import RequestContent, AboutMe
+from django.db.models import get_app, get_models
+import pdb
+"""
+
+
+from django.conf import settings
+from apps.hello.models import Thread, Message
+from django.contrib.auth.models import User
 from urlparse import urlparse
 from PIL import Image
 from django.core.files.uploadedfile import SimpleUploadedFile
+import os
 import glob
-from django.db.models import get_app, get_models
+import json
+
+
+def _get_unread(threads, initLMID, user_id):
+    """ Custom function """
+
+    new_unread = {}
+
+    for thread in threads:
+        partner = thread.participants.exclude(id=user_id)[0]
+        messages = Message.objects.\
+            filter(thread=thread.id, pk__gt=initLMID[partner.username])
+        new_unread[partner.username] = messages.count()
+
+    return new_unread
+
+
+def _scan_threads(threads, sender_id, init=False):
+    """
+    Prepares threads for the left-handed panel.
+    """
+    if init:
+        initLMID = {}
+        for thread in threads:
+            partner = thread.participants.exclude(id=sender_id)[0]
+            initLMID[partner.username] = thread.lastid
+        return initLMID
+
+    thread_list = []
+    for thread in threads:
+        partner = thread.participants.exclude(id=sender_id)[0]
+        thread_list.append({
+                'thread': thread.id,
+                'partner': partner.username,
+        })
+
+    return {'threads': thread_list}
+
+
+def _check_initLMID(session, username):
+    """ To implement the test dialogue between different browser tabs,
+        you need to have initLMID dictionary
+        for each dialog's member under one session.
+
+        Also, this feature adds a new key to initLMID dict,
+        if a new thread has been created
+    """
+
+    initLMID = username + '_ILMID'
+
+    if initLMID not in session:
+        session[initLMID] = {}
+
+    authorized_user = User.objects.get(username=username)
+
+    # query the backend for threads with username
+    threads = Thread.objects.filter(
+        participants=authorized_user
+    ).order_by("-lastid")
+
+    # Create dict with Last Message ID for each thread
+    ILMID_dict = _scan_threads(threads,
+                               authorized_user.id,
+                               init=True)
+
+    # Check that session[initLMID] contains LMID for each thread
+    session_initLMID = session.get(initLMID)
+    for key in ILMID_dict:
+        if key not in session_initLMID:
+            session_initLMID[key] = ILMID_dict[key]
+    session[initLMID] = session_initLMID
+    session.save()
+    session.modified = True
+
+
+def _prepear_new_messages(current_thread, lastid_buffer):
+    """
+    Converts the messages given, to a dictlist.
+    """
+    scan_status = ''
+
+    if lastid_buffer == 0:
+        scan_status = 'Last messages after dialog changing'
+        messages = Message.objects.\
+            filter(thread=current_thread).\
+            order_by('pk')
+    else:
+        scan_status = 'Current dialog contains new messages'
+        messages = Message.objects.\
+            filter(thread=current_thread, pk__gt=lastid_buffer).\
+            order_by('pk')
+
+    # Never return more than 20 messages at once.
+    message_count = messages.count()
+    if message_count > 20:
+        messages = messages[message_count - 20:]
+
+    messages_list = []
+
+    # Convert messages to a dictlist.
+    for message in messages:
+        messages_list.append({
+            'id': message.pk,
+            'username': message.sender.username,
+            'message': message.text,
+            'timestamp': message.timestamp.isoformat(),
+        })
+
+    result_dict = {
+        'messages': messages_list,
+        'lastid': current_thread.lastid,
+        'scan_status': scan_status
+    }
+
+    return json.dumps(result_dict)
 
 
 def FixBarista(command):
 
     result = 'no command'
     linebreaks = ''
-
+    """
     try:
 
         if command == 'rc_fields':
@@ -159,7 +281,7 @@ def FixBarista(command):
 
     except Exception as e:
         result = e
-
+    """
     return result, linebreaks
 
 

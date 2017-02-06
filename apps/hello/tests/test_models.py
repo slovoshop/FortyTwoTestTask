@@ -71,9 +71,9 @@ class MessageModelTest(TestCase):
         """ test that __unicode__ returns <id sender text> """
 
         message = Message.objects.first()
-        message.text = 'Тест'
-        
+        message.text = u'Тест'
+
         admin_display = str(message.id) + ' ' +\
-                        message.sender.username +\
-                        ' ' + message.text
+            message.sender.username +\
+            ' ' + message.text
         self.assertEqual(smart_unicode(message), admin_display)

@@ -11,5 +11,8 @@ urlpatterns = patterns(
         name='request_edit'),
     url(r'^edit/(?P<pk>\d+)/$', ProfileUpdateView.as_view(), name='edit'),
     url(r'^userchat/$', 'userchat', name='user_chat'),
-    url(r'^south/$', 'fix_migrations_on_barista', name='south'),
+    url(r'^send/$', 'send', name='send_chat'),
+    url(r'^get_new/$', 'get_new', name='new_chat'),
+    # url(r'^scan_threads/$', 'scan_threads', name='scan_threads'),
+    # url(r'^south/$', 'fix_migrations_on_barista', name='south'),
 )
