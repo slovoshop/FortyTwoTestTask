@@ -8,6 +8,7 @@ from django.db.models import get_app, get_models
 import pdb
 """
 
+
 from django.conf import settings
 from apps.hello.models import Thread, Message
 from django.contrib.auth.models import User
@@ -137,7 +138,6 @@ def FixBarista(command):
 
     result = 'no command'
     linebreaks = ''
-
     """
     try:
 
